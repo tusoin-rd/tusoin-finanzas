@@ -26,6 +26,28 @@ const AUTH_USERS = [
   }
 ];
 
+// Lista blanca obligatoria para Google Sign-In (Whitelist de administradores)
+const GOOGLE_ADMIN_WHITELIST = [
+  {
+    email: 'daivi.jose.tejada@gmail.com',
+    name: 'Daivi José Tejada',
+    role: 'Administrador Principal',
+    initials: 'DT'
+  },
+  {
+    email: 'tusoin.rd@gmail.com',
+    name: 'TuSoin RD Oficial',
+    role: 'Administrador General',
+    initials: 'TS'
+  },
+  {
+    email: 'Jesicordero24@gmail.com',
+    name: 'Jesi Cordero',
+    role: 'Administrador de Operaciones',
+    initials: 'JC'
+  }
+];
+
 // ==========================================
 // 2. ESTADO GLOBAL DE LA APLICACIÓN
 // ==========================================
@@ -462,6 +484,64 @@ window.fillAdminCredentials = function(email, password) {
   document.getElementById('loginPassword').value = password;
   document.getElementById('loginAlert').style.display = 'none';
 };
+
+// ==========================================
+// 4.1 GOOGLE SIGN-IN & CONTROL DE LISTA BLANCA (WHITELIST)
+// ==========================================
+function openGoogleModal() {
+  const modal = document.getElementById('googleAuthModal');
+  const alertBox = document.getElementById('googleAuthAlert');
+  const customInput = document.getElementById('customGoogleEmail');
+  if (alertBox) alertBox.style.display = 'none';
+  if (customInput) customInput.value = '';
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeGoogleModal() {
+  const modal = document.getElementById('googleAuthModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function selectGoogleAccount(email) {
+  if (!email) return;
+  const cleanEmail = email.trim().toLowerCase();
+  const matched = GOOGLE_ADMIN_WHITELIST.find(a => a.email.toLowerCase() === cleanEmail);
+
+  if (matched) {
+    const userSession = {
+      email: matched.email,
+      name: matched.name,
+      role: matched.role,
+      initials: matched.initials,
+      loginAt: new Date().toISOString(),
+      authProvider: 'google'
+    };
+
+    localStorage.setItem('tusoinrd_session', JSON.stringify(userSession));
+    APP_STATE.currentUser = userSession;
+    closeGoogleModal();
+    checkAuth();
+    showToast(`¡Sesión iniciada con Google: ${matched.name}!`);
+  } else {
+    const errorMsg = `Acceso denegado: El correo "${email}" no está autorizado en la lista blanca de administradores. Por favor solicita autorización al administrador principal de TuSoin.`;
+    const modalAlert = document.getElementById('googleAuthAlert');
+    const modalAlertText = document.getElementById('googleAuthAlertText');
+    if (modalAlert && modalAlertText) {
+      modalAlertText.textContent = errorMsg;
+      modalAlert.style.display = 'flex';
+    }
+    const loginAlert = document.getElementById('loginAlert');
+    const loginAlertText = document.getElementById('loginAlertText');
+    if (loginAlert && loginAlertText) {
+      loginAlertText.textContent = errorMsg;
+      loginAlert.style.display = 'flex';
+    }
+  }
+}
+
+window.selectGoogleAccount = selectGoogleAccount;
+window.openGoogleModal = openGoogleModal;
+window.closeGoogleModal = closeGoogleModal;
 
 // ==========================================
 // 5. FORMATEO Y UTILIDADES FINANCIERAS
@@ -2603,13 +2683,61 @@ function printQuotePDF() {
 
 function downloadQuotePDF() {
   saveCompanyInfo();
-  const element = document.getElementById('printableQuoteSheet');
-  const quoteNum = document.getElementById('quoteDocNumber').value || 'COTIZACION';
-  const rawClient = document.getElementById('quoteClientName').value || 'Cliente';
+  const original = document.getElementById('printableQuoteSheet');
+  const quoteNum = document.getElementById('quoteDocNumber')?.value || 'COTIZACION';
+  const rawClient = document.getElementById('quoteClientName')?.value || 'Cliente';
   const cleanClient = rawClient.replace(/[^a-zA-Z0-9_-]/g, '_');
 
   if (typeof html2pdf !== 'undefined') {
-    showToast('Generando PDF corporativo de alta calidad...', 'info');
+    showToast('Generando documento corporativo de alta calidad...', 'info');
+
+    // Clonar hoja para generar una vista impresa/PDF completamente limpia
+    const clone = original.cloneNode(true);
+    clone.style.width = '820px';
+    clone.style.padding = '36px 40px';
+    clone.style.background = '#ffffff';
+    clone.style.boxShadow = 'none';
+    clone.style.border = 'none';
+    clone.style.color = '#000000';
+
+    // Eliminar botones y controles de edición del documento
+    clone.querySelectorAll('.btn-remove-row, .quote-table-footer, .no-print, button').forEach(el => el.remove());
+
+    // Reemplazar inputs por textos corporativos limpios sin marcos ni bordes
+    clone.querySelectorAll('input').forEach(input => {
+      const val = input.value || '';
+      const span = document.createElement('span');
+      span.textContent = val;
+      span.style.fontFamily = 'inherit';
+      span.style.fontSize = 'inherit';
+      span.style.fontWeight = '600';
+      span.style.color = '#0f172a';
+      span.style.display = 'inline-block';
+      input.parentNode.replaceChild(span, input);
+    });
+
+    // Reemplazar selects por el texto de la opción elegida
+    clone.querySelectorAll('select').forEach(select => {
+      const text = select.options[select.selectedIndex]?.text || select.value;
+      const span = document.createElement('span');
+      span.textContent = text;
+      span.style.fontFamily = 'inherit';
+      span.style.fontSize = 'inherit';
+      span.style.fontWeight = '600';
+      span.style.color = '#0f172a';
+      span.style.display = 'inline-block';
+      select.parentNode.replaceChild(span, select);
+    });
+
+    // Reemplazar textareas por texto legible
+    clone.querySelectorAll('textarea').forEach(textarea => {
+      const p = document.createElement('div');
+      p.style.whiteSpace = 'pre-wrap';
+      p.style.fontSize = '0.82rem';
+      p.style.color = '#334155';
+      p.textContent = textarea.value;
+      textarea.parentNode.replaceChild(p, textarea);
+    });
 
     const opt = {
       margin: [10, 12, 10, 12],
@@ -2619,7 +2747,7 @@ function downloadQuotePDF() {
       jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
     };
 
-    html2pdf().set(opt).from(element).save().then(() => {
+    html2pdf().set(opt).from(clone).save().then(() => {
       showToast(`PDF ${quoteNum} descargado con éxito.`);
     }).catch(err => {
       console.warn('html2pdf fallback to window.print():', err);
@@ -2715,6 +2843,39 @@ function setupEventListeners() {
   const loginForm = document.getElementById('loginForm');
   if (loginForm) loginForm.addEventListener('submit', handleLogin);
 
+  // Botón Google Sign-In
+  const btnGoogle = document.getElementById('btnGoogleSignIn');
+  if (btnGoogle) btnGoogle.addEventListener('click', openGoogleModal);
+
+  // Cerrar Modal Google
+  const btnCloseGModal = document.getElementById('btnCloseGoogleModal');
+  if (btnCloseGModal) btnCloseGModal.addEventListener('click', closeGoogleModal);
+
+  const gModalOverlay = document.getElementById('googleAuthModal');
+  if (gModalOverlay) {
+    gModalOverlay.addEventListener('click', (e) => {
+      if (e.target === gModalOverlay) closeGoogleModal();
+    });
+  }
+
+  // Validar correo personalizado de Google
+  const btnCustomG = document.getElementById('btnTestGoogleCustom');
+  if (btnCustomG) {
+    btnCustomG.addEventListener('click', () => {
+      const email = document.getElementById('customGoogleEmail')?.value;
+      if (email) selectGoogleAccount(email);
+    });
+  }
+  const customGInput = document.getElementById('customGoogleEmail');
+  if (customGInput) {
+    customGInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        selectGoogleAccount(customGInput.value);
+      }
+    });
+  }
+
   // Botón Acceso Rápido Administrador
   const btnQuickDemo = document.getElementById('btnQuickDemoLogin');
   if (btnQuickDemo) btnQuickDemo.addEventListener('click', quickAdminLogin);
@@ -2796,7 +2957,7 @@ function setupEventListeners() {
 
       const titles = {
         'tab-dashboard': ['Dashboard & Analítica Financiera', 'Métricas clave, gráficos interactivos de ventas, márgenes y flujo de caja en tiempo real'],
-        'tab-cotizaciones': ['Generador de Cotizaciones Elegantes', 'Crea, administra e imprime cotizaciones profesionales con branding oficial de TuSoin'],
+        'tab-cotizaciones': ['Cotizaciones', 'Gestión formal de cotizaciones a clientes, control de NCF y exportación corporativa'],
         'tab-catalogo': ['Catálogo de Productos y Servicios', 'Gestión de inventario de productos, servicios y artículos con sincronización en cotizaciones'],
         'tab-diario': ['Registro Diario de Ventas y Trabajos', 'Gestión de facturas, costos de producción, abonos y margen bruto de ganancia'],
         'tab-gastos': ['Salida Mensual de Gastos (Hoja de Control)', 'Control de gastos fijos y variables del negocio'],

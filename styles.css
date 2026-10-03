@@ -334,9 +334,213 @@ body {
   100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
 }
 
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 14px 0 10px 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.auth-divider span {
+  padding: 0 12px;
+  font-size: 0.76rem;
+  color: #94a3b8;
+  font-weight: 500;
+  text-transform: lowercase;
+}
+
+.btn-google-auth {
+  width: 100%;
+  padding: 12px 16px;
+  background: #ffffff;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-md);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.btn-google-auth:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.google-icon {
+  flex-shrink: 0;
+}
+
+/* Modal Google Sign-In */
+.google-modal-card {
+  max-width: 480px;
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--slate-200);
+}
+
+.google-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--slate-100);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: #f8fafc;
+}
+
+.google-modal-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.google-modal-brand h3 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--slate-900);
+  margin-bottom: 2px;
+}
+
+.google-modal-brand p {
+  font-size: 0.8rem;
+  color: var(--slate-500);
+}
+
+.google-modal-body {
+  padding: 22px 24px;
+}
+
+.google-accounts-subtitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--slate-600);
+  margin-bottom: 12px;
+}
+
+.google-accounts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.google-account-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.google-account-item:hover {
+  background: #f0fdf4;
+  border-color: #10b981;
+  transform: translateX(4px);
+  box-shadow: 0 3px 8px rgba(16, 185, 129, 0.12);
+}
+
+.google-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-xs);
+}
+
+.google-account-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.google-account-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--slate-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.google-account-email {
+  font-size: 0.8rem;
+  color: var(--slate-500);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.google-badge-auth {
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: #dcfce7;
+  color: #15803d;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.google-custom-login-section {
+  border-top: 1px solid var(--slate-200);
+  padding-top: 16px;
+}
+
+.google-custom-login-section label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--slate-600);
+  margin-bottom: 8px;
+}
+
+.google-custom-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.google-custom-input {
+  flex: 1;
+  padding: 9px 12px;
+  border: 1px solid var(--slate-300);
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  outline: none;
+}
+
+.google-custom-input:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
 .auth-demo-accounts {
-  margin-top: 28px;
-  padding-top: 20px;
+  margin-top: 24px;
+  padding-top: 18px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -2388,6 +2592,7 @@ input:checked + .toggle-slider:before {
   .quote-editor-topbar,
   .quote-subnav-tabs,
   .filter-panel,
+  .section-header-row,
   .modal-overlay,
   .toast-container,
   .auth-wrapper,
@@ -2399,6 +2604,9 @@ input:checked + .toggle-slider:before {
   #btnSaveQuote,
   #btnConvertQuoteToSale,
   #btnPrintQuotePDF,
+  #btnDownloadQuotePDF,
+  #btnNewQuoteCreator,
+  #btnNewQuoteFromEditor,
   .sidebar-backdrop {
     display: none !important;
   }
