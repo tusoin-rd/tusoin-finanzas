@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ingresos — TuSoinRD</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+
+  <nav class="bg-blue-700 text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <span class="text-xl font-bold">💼 TuSoinRD</span>
+      <div class="flex gap-4 text-sm font-medium">
+        <a href="../index.html" class="hover:text-blue-200">Dashboard</a>
+        <a href="clientes.html" class="hover:text-blue-200">Clientes</a>
+        <a href="ingresos.html" class="hover:text-blue-200 underline">Ingresos</a>
+        <a href="egresos.html"  class="hover:text-blue-200">Egresos</a>
+        <a href="reportes.html" class="hover:text-blue-200">Reportes</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">💰 Ingresos</h1>
+      <button onclick="abrirModal()" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">
+        ➕ Nuevo Ingreso
+      </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="flex flex-wrap gap-3 mb-4 items-end">
+      <div>
+        <label class="text-xs text-gray-500 block mb-1">Desde</label>
+        <input type="date" id="filtroDesde" class="border rounded px-3 py-1.5 text-sm"/>
+      </div>
+      <div>
+        <label class="text-xs text-gray-500 block mb-1">Hasta</label>
+        <input type="date" id="filtroHasta" class="border rounded px-3 py-1.5 text-sm"/>
+      </div>
+      <button onclick="cargarIngresos()" class="bg-blue-700 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-800">Filtrar</button>
+      <button onclick="limpiarFiltros()" class="border px-4 py-1.5 rounded text-sm hover:bg-gray-100">Limpiar</button>
+    </div>
+
+    <!-- Tabla -->
+    <div class="bg-white rounded-xl shadow overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+          <tr>
+            <th class="px-4 py-3 text-left">Fecha</th>
+            <th class="px-4 py-3 text-left">Descripción</th>
+            <th class="px-4 py-3 text-left">Cliente</th>
+            <th class="px-4 py-3 text-left">Categoría</th>
+            <th class="px-4 py-3 text-left">Método</th>
+            <th class="px-4 py-3 text-right">Monto</th>
+            <th class="px-4 py-3 text-left">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tablaIngresos" class="divide-y divide-gray-100">
+          <tr><td colspan="7" class="px-4 py-6 text-center text-gray-400">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Modal -->
+  <div id="modal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg mx-4 max-h-screen overflow-y-auto">
+      <h2 id="modalTitulo" class="text-lg font-bold text-gray-800 mb-4">Nuevo Ingreso</h2>
+      <form id="formIngreso" onsubmit="guardarIngreso(event)" class="space-y-3">
+        <input type="hidden" id="ingresoId"/>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-gray-500">Fecha *</label>
+            <input id="fFecha" required type="date" class="border rounded-lg px-3 py-2 w-full text-sm mt-1"/>
+          </div>
+          <div>
+            <label class="text-xs text-gray-500">Monto *</label>
+            <input id="fMonto" required type="number" step="0.01" min="0.01"
+              class="border rounded-lg px-3 py-2 w-full text-sm mt-1" placeholder="0.00"/>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Descripción *</label>
+          <input id="fDescripcion" required type="text" class="border rounded-lg px-3 py-2 w-full text-sm mt-1"/>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-gray-500">Categoría *</label>
+            <select id="fCategoria" required class="border rounded-lg px-3 py-2 w-full text-sm mt-1">
+              <option value="">-- Selecciona --</option>
+              <option value="Venta de Servicio">Venta de Servicio</option>
+              <option value="Venta de Producto">Venta de Producto</option>
+              <option value="Cobro Pendiente">Cobro Pendiente</option>
+              <option value="Anticipo">Anticipo</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-gray-500">Método de Pago *</label>
+            <select id="fMetodoPago" required class="border rounded-lg px-3 py-2 w-full text-sm mt-1">
+              <option value="">-- Selecciona --</option>
+              <option value="efectivo">Efectivo</option>
+              <option value="transferencia">Transferencia</option>
+              <option value="tarjeta">Tarjeta</option>
+              <option value="cheque">Cheque</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-gray-500">Moneda</label>
+            <select id="fMoneda" class="border rounded-lg px-3 py-2 w-full text-sm mt-1">
+              <option value="DOP">DOP (Pesos)</option>
+              <option value="USD">USD (Dólares)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-gray-500">No. Factura</label>
+            <input id="fFactura" type="text" class="border rounded-lg px-3 py-2 w-full text-sm mt-1"/>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Cliente (opcional)</label>
+          <select id="fCliente" class="border rounded-lg px-3 py-2 w-full text-sm mt-1">
+            <option value="">-- Sin cliente --</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Notas</label>
+          <textarea id="fNotas" rows="2" class="border rounded-lg px-3 py-2 w-full text-sm mt-1"></textarea>
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button type="submit" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-sm hover:bg-green-700">Guardar</button>
+          <button type="button" onclick="cerrarModal()" class="flex-1 border py-2 rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    // Precargar lista de clientes para el select del formulario
+    async function cargarClientesSelect() {
+      try {
+        const clientes = await apiGet('/clientes/?limit=200');
+        const sel = document.getElementById('fCliente');
+        clientes.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          opt.textContent = c.nombre;
+          sel.appendChild(opt);
+        });
+      } catch(e) {}
+    }
+
+    async function cargarIngresos() {
+      const desde = document.getElementById('filtroDesde').value;
+      const hasta = document.getElementById('filtroHasta').value;
+      const params = new URLSearchParams();
+      if (desde) params.append('fecha_desde', desde);
+      if (hasta) params.append('fecha_hasta', hasta);
+
+      try {
+        const ingresos = await apiGet(`/ingresos/?${params}&limit=200`);
+        const tbody = document.getElementById('tablaIngresos');
+        if (!ingresos.length) {
+          tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-6 text-center text-gray-400">Sin ingresos registrados</td></tr>';
+          return;
+        }
+        tbody.innerHTML = ingresos.map(ing => `
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-3 text-gray-600">${ing.fecha}</td>
+            <td class="px-4 py-3 font-medium text-gray-800">${ing.descripcion}</td>
+            <td class="px-4 py-3 text-gray-600">${ing.cliente?.nombre || '—'}</td>
+            <td class="px-4 py-3"><span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">${ing.categoria}</span></td>
+            <td class="px-4 py-3 text-gray-600 capitalize">${ing.metodo_pago}</td>
+            <td class="px-4 py-3 text-right font-semibold text-green-600">${fmtDOP(ing.monto)}</td>
+            <td class="px-4 py-3">
+              <button onclick="editarIngreso(${ing.id})" class="text-blue-600 hover:underline text-xs mr-3">Editar</button>
+              <button onclick="eliminarIngreso(${ing.id})" class="text-red-500 hover:underline text-xs">Eliminar</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch(e) {
+        showToast('Error cargando ingresos: ' + e.message, 'error');
+      }
+    }
+
+    function abrirModal(ing = null) {
+      document.getElementById('modal').classList.remove('hidden');
+      document.getElementById('modalTitulo').textContent = ing ? 'Editar Ingreso' : 'Nuevo Ingreso';
+      document.getElementById('ingresoId').value   = ing?.id || '';
+      document.getElementById('fFecha').value      = ing?.fecha || new Date().toISOString().slice(0,10);
+      document.getElementById('fMonto').value      = ing?.monto || '';
+      document.getElementById('fDescripcion').value = ing?.descripcion || '';
+      document.getElementById('fCategoria').value  = ing?.categoria || '';
+      document.getElementById('fMetodoPago').value = ing?.metodo_pago || '';
+      document.getElementById('fMoneda').value     = ing?.moneda || 'DOP';
+      document.getElementById('fFactura').value    = ing?.numero_factura || '';
+      document.getElementById('fCliente').value    = ing?.cliente_id || '';
+      document.getElementById('fNotas').value      = ing?.notas || '';
+    }
+
+    function cerrarModal() { document.getElementById('modal').classList.add('hidden'); }
+
+    async function editarIngreso(id) {
+      try {
+        const ing = await apiGet(`/ingresos/${id}`);
+        abrirModal(ing);
+      } catch(e) { showToast(e.message, 'error'); }
+    }
+
+    async function guardarIngreso(e) {
+      e.preventDefault();
+      const id = document.getElementById('ingresoId').value;
+      const body = {
+        fecha:           document.getElementById('fFecha').value,
+        monto:           parseFloat(document.getElementById('fMonto').value),
+        descripcion:     document.getElementById('fDescripcion').value,
+        categoria:       document.getElementById('fCategoria').value,
+        metodo_pago:     document.getElementById('fMetodoPago').value,
+        moneda:          document.getElementById('fMoneda').value,
+        numero_factura:  document.getElementById('fFactura').value || null,
+        cliente_id:      document.getElementById('fCliente').value || null,
+        notas:           document.getElementById('fNotas').value || null,
+      };
+      try {
+        if (id) {
+          await apiPut(`/ingresos/${id}`, body);
+          showToast('Ingreso actualizado ✅');
+        } else {
+          await apiPost('/ingresos/', body);
+          showToast('Ingreso registrado ✅');
+        }
+        cerrarModal();
+        cargarIngresos();
+      } catch(e) { showToast(e.message, 'error'); }
+    }
+
+    async function eliminarIngreso(id) {
+      if (!confirm('¿Eliminar este ingreso?')) return;
+      try {
+        await apiDelete(`/ingresos/${id}`);
+        showToast('Ingreso eliminado');
+        cargarIngresos();
+      } catch(e) { showToast(e.message, 'error'); }
+    }
+
+    function limpiarFiltros() {
+      document.getElementById('filtroDesde').value = '';
+      document.getElementById('filtroHasta').value = '';
+      cargarIngresos();
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModal(); });
+
+    cargarClientesSelect();
+    cargarIngresos();
+  </script>
+</body>
+</html>

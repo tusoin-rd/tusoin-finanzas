@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TuSoin - Tu Solución Inmediata | Sistema de Finanzas y Cotizaciones</title>
+  
+  <!-- Branding Favicon con Logo de TuSoin -->
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="icon" type="image/jpeg" href="assets/logo.jpg">
+  <link rel="apple-touch-icon" href="assets/logo.png">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Chart.js para Analíticas y Gráficos Visuales -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- html2pdf.js para Exportación Directa de Cotizaciones en PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- =========================================================
+       1. PANTALLA DE INICIAR SESIÓN (LOGIN PAGE MODERNO SAAS)
+       ========================================================= -->
+  <div id="authContainer" class="auth-wrapper">
+    <div class="auth-backdrop-shape shape-1"></div>
+    <div class="auth-backdrop-shape shape-2"></div>
+    
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="auth-brand-logo-wrap">
+          <img src="assets/logo.png" alt="TuSoin - Tu solución inmediata" class="auth-brand-logo-img">
+        </div>
+        <div class="auth-brand-text">
+          <h1>TuSoin</h1>
+          <span>Tu solución inmediata</span>
+        </div>
+      </div>
+
+      <div class="auth-header">
+        <h2>Acceso Administrativo</h2>
+        <p>Ingresa tus credenciales para gestionar el sistema de finanzas, catálogo y cotizaciones.</p>
+      </div>
+
+      <div id="loginAlert" class="auth-alert" style="display: none;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span id="loginAlertText">Credenciales inválidas. Verifica tu correo o contraseña.</span>
+      </div>
+
+      <form id="loginForm" class="auth-form" autocomplete="on">
+        <div class="form-group">
+          <label for="loginEmail">Correo Electrónico Corporativo</label>
+          <div class="input-icon-wrap">
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <input type="email" id="loginEmail" required placeholder="admin@tusoinrd.com" autocomplete="email">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label-with-addon">
+            <label for="loginPassword">Contraseña</label>
+          </div>
+          <div class="input-icon-wrap">
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <input type="password" id="loginPassword" required placeholder="••••••••" autocomplete="current-password">
+            <button type="button" id="togglePasswordBtn" class="input-eye-btn" title="Mostrar/Ocultar contraseña">
+              <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="auth-options">
+          <label class="remember-checkbox">
+            <input type="checkbox" id="rememberMe" checked>
+            <span>Recordar sesión en este equipo</span>
+          </label>
+        </div>
+
+        <button type="submit" id="btnLoginSubmit" class="btn btn-primary btn-auth-submit">
+          <span class="btn-text">Iniciar Sesión</span>
+          <span class="btn-loader" style="display: none;">
+            <svg class="spinner" width="18" height="18" viewBox="0 0 50 50">
+              <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+            </svg>
+            <span>Verificando acceso...</span>
+          </span>
+        </button>
+
+        <!-- Botón de Acceso Rápido Directo para despliegues públicos en Vercel/Netlify/GitHub Pages -->
+        <button type="button" id="btnQuickDemoLogin" class="btn-demo-quick">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <span>Acceso Rápido Administrador (1 Clic)</span>
+        </button>
+      </form>
+
+      <!-- Accesos Directos Rápidos de Prueba para los 2 Administradores -->
+      <div class="auth-demo-accounts">
+        <span class="demo-title">Credenciales de Administrador (Clic para auto-llenar):</span>
+        <div class="demo-chips">
+          <button type="button" class="demo-chip" onclick="fillAdminCredentials('admin@tusoinrd.com', 'admin123')">
+            <strong>Admin 1:</strong> admin@tusoinrd.com
+          </button>
+          <button type="button" class="demo-chip" onclick="fillAdminCredentials('gerencia@tusoinrd.com', 'tusoin2026')">
+            <strong>Admin 2 (Gerencia):</strong> gerencia@tusoinrd.com
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       2. PANEL PRINCIPAL DASHBOARD (PROTEGIDO POR AUTENTICACIÓN)
+       ========================================================= -->
+  <div class="app-layout" id="appLayout" style="display: none;">
+    <!-- Overlay para dispositivos móviles -->
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+    <!-- Sidebar de Navegación Colapsable -->
+    <aside class="sidebar" id="mainSidebar">
+      <div class="brand">
+        <div class="brand-logo-container">
+          <img src="assets/logo.png" alt="TuSoin" class="brand-logo-img" id="sidebarLogoImg">
+        </div>
+        <div class="brand-info">
+          <h2>TuSoin</h2>
+          <span>Tu solución inmediata</span>
+        </div>
+        <button id="sidebarCollapseBtn" class="sidebar-collapse-btn sidebar-collapse-toggle" title="Colapsar / Expandir menú lateral">
+          <svg class="collapse-icon-desktop" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="nav-menu">
+        <!-- Dashboard & Métricas -->
+        <button class="nav-item active" data-tab="tab-dashboard" title="Dashboard & Métricas">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          <span class="nav-text">Dashboard & Métricas</span>
+        </button>
+
+        <!-- MÓDULO 2: Generador de Cotizaciones Elegantes -->
+        <button class="nav-item nav-highlight" data-tab="tab-cotizaciones" title="Generador de Cotizaciones">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <span class="nav-text">Cotizaciones Elegantes</span>
+          <span class="nav-badge">Nuevo</span>
+        </button>
+
+        <!-- MÓDULO 1: Gestión de Productos y Servicios -->
+        <button class="nav-item nav-highlight" data-tab="tab-catalogo" title="Productos y Servicios">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+          <span class="nav-text">Productos y Servicios</span>
+        </button>
+
+        <!-- Registro Diario de Ventas -->
+        <button class="nav-item" data-tab="tab-diario" title="Registro Diario de Ventas">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span class="nav-text">Registro Diario</span>
+        </button>
+
+        <!-- Salida Mensual (Gastos) -->
+        <button class="nav-item" data-tab="tab-gastos" title="Salida Mensual de Gastos">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+          <span class="nav-text">Salida Mensual</span>
+        </button>
+
+        <!-- Ingreso Neto -->
+        <button class="nav-item" data-tab="tab-ingreso-neto" title="Ingreso Neto Global">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+            <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+          </svg>
+          <span class="nav-text">Ingreso Neto</span>
+        </button>
+
+        <!-- Pagos a Proveedores -->
+        <button class="nav-item" data-tab="tab-proveedores" title="Pagos a Proveedores">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="3" width="15" height="13"></rect>
+            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+            <circle cx="5.5" cy="18.5" r="2.5"></circle>
+            <circle cx="18.5" cy="18.5" r="2.5"></circle>
+          </svg>
+          <span class="nav-text">Pagos a Proveedores</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="currency-selector-box">
+          <label for="currencySelect">Moneda:</label>
+          <select id="currencySelect" class="form-select-sm">
+            <option value="RD$">RD$ (Pesos Dom.)</option>
+            <option value="$">$ (USD)</option>
+            <option value="€">€ (Euros)</option>
+          </select>
+        </div>
+        <div class="system-status">
+          <span class="status-dot"></span>
+          <span class="status-text">Datos en Tiempo Real</span>
+        </div>
+        <div class="action-buttons-compact">
+          <button id="btnExportJson" title="Respaldar datos a archivo JSON" class="btn-text-sm">Respaldar</button>
+          <span>•</span>
+          <button id="btnImportJsonTrigger" title="Restaurar datos desde archivo JSON" class="btn-text-sm">Restaurar</button>
+          <input type="file" id="importJsonInput" accept=".json" style="display:none;">
+        </div>
+      </div>
+    </aside>
+
+    <!-- Contenido Principal -->
+    <main class="main-content" id="mainContentArea">
+      <!-- Header Superior con Toggle de Menú, Info de Usuario y Cerrar Sesión -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="mobileMenuBtn" class="mobile-toggle" aria-label="Abrir menú de navegación">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <div class="topbar-brand-mobile">
+            <img src="assets/logo.png" alt="TuSoin" class="topbar-mini-logo">
+          </div>
+          <div>
+            <h1 id="pageTitle">Dashboard & Analítica Financiera</h1>
+            <p id="pageSubtitle" class="text-muted">Métricas clave, gráficos interactivos de ventas, márgenes y cotizaciones</p>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <!-- Perfil de Usuario Activo y Botón Salir -->
+          <div class="user-profile-badge">
+            <div class="user-avatar" id="userAvatarText">AD</div>
+            <div class="user-meta">
+              <span class="user-name" id="userFullName">Admin TuSoin</span>
+              <span class="user-role" id="userEmailText">admin@tusoinrd.com</span>
+            </div>
+            <button id="btnLogout" class="btn-logout" title="Cerrar Sesión Segura">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              <span>Salir</span>
+            </button>
+          </div>
+
+          <button id="btnResetToRealData" class="btn btn-outline" title="Restablecer base de datos original">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+            <span>Resetear Excel</span>
+          </button>
+
+          <button id="btnExportCSV" class="btn btn-outline" title="Descargar como archivo CSV para Excel">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <span>Exportar CSV</span>
+          </button>
+
+          <button id="btnOpenNewSaleModal" class="btn btn-primary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>+ Nueva Venta</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- =========================================================
+           SECCIÓN: DASHBOARD & MÉTRICAS (ESTILO STRIPE/SHOPIFY)
+           ========================================================= -->
+      <section id="tab-dashboard" class="view-section active">
+        <!-- Filtro Global de Tiempo para el Dashboard -->
+        <div class="dashboard-controls-bar">
+          <div class="time-filter-pills">
+            <button class="pill-btn" data-time="today">Hoy</button>
+            <button class="pill-btn" data-time="7days">Últimos 7 días</button>
+            <button class="pill-btn" data-time="month">Este mes</button>
+            <button class="pill-btn" data-time="year">Este año</button>
+            <button class="pill-btn active" data-time="all">Todo el historial</button>
+          </div>
+          <div class="dashboard-live-indicator">
+            <span class="pulsing-dot"></span>
+            <span id="dashboardFilterLabel">Datos Reales: Todo el historial (Excel)</span>
+          </div>
+        </div>
+
+        <!-- 5 Tarjetas de Métricas Clave (KPI Cards SaaS) -->
+        <div class="saas-kpi-grid">
+          <div class="saas-card">
+            <div class="saas-card-head">
+              <span class="saas-card-label">Total Ventas Facturadas</span>
+              <div class="saas-card-icon icon-green">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+              </div>
+            </div>
+            <div class="saas-card-body">
+              <h2 class="saas-val" id="dashTotalSales">RD$ 0.00</h2>
+              <div class="saas-badge-trend positive" id="dashSalesGrowth">
+                <span id="dashSalesGrowthText">91 órdenes</span>
+              </div>
+            </div>
+            <span class="saas-subtext" id="dashSalesCount">91 trabajos registrados</span>
+          </div>
+
+          <div class="saas-card">
+            <div class="saas-card-head">
+              <span class="saas-card-label">Margen de Ganancia ($)</span>
+              <div class="saas-card-icon icon-emerald">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+              </div>
+            </div>
+            <div class="saas-card-body">
+              <h2 class="saas-val text-positive" id="dashGrossProfit">RD$ 0.00</h2>
+              <div class="saas-badge-pill" id="dashProfitMargin">Margen: 0%</div>
+            </div>
+            <span class="saas-subtext" id="dashCostSubtext">Costos directos deducidos</span>
+          </div>
+
+          <div class="saas-card">
+            <div class="saas-card-head">
+              <span class="saas-card-label">Pendiente Cobrar a Clientes</span>
+              <div class="saas-card-icon icon-rose">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              </div>
+            </div>
+            <div class="saas-card-body">
+              <h2 class="saas-val text-negative" id="dashPendingBalance">RD$ 0.00</h2>
+              <div class="saas-badge-pill badge-neutral" id="dashPendingOrders">0 por cobrar</div>
+            </div>
+            <span class="saas-subtext" id="dashCollectedPercent">0% recaudado</span>
+          </div>
+
+          <div class="saas-card">
+            <div class="saas-card-head">
+              <span class="saas-card-label">Pendiente a NorthCentral</span>
+              <div class="saas-card-icon icon-rose">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon></svg>
+              </div>
+            </div>
+            <div class="saas-card-body">
+              <h2 class="saas-val text-negative" id="dashPendingNorthCentral">RD$ 0.00</h2>
+              <div class="saas-badge-pill badge-blue" id="dashPaidNorthCentral">Pagado: RD$ 0</div>
+            </div>
+            <span class="saas-subtext">Costo de producción pendiente</span>
+          </div>
+
+          <div class="saas-card">
+            <div class="saas-card-head">
+              <span class="saas-card-label">Ticket Promedio Venta</span>
+              <div class="saas-card-icon icon-blue">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path></svg>
+              </div>
+            </div>
+            <div class="saas-card-body">
+              <h2 class="saas-val" id="dashAvgSale">RD$ 0.00</h2>
+              <div class="saas-badge-pill badge-blue" id="dashClientsCount">0 clientes</div>
+            </div>
+            <span class="saas-subtext">Promedio facturado por trabajo</span>
+          </div>
+        </div>
+
+        <!-- 4 Gráficos Interactivos de Alto Nivel -->
+        <div class="charts-grid">
+          <!-- Gráfico 1: Evolución de Ingresos vs. Costos -->
+          <div class="chart-card chart-card-wide">
+            <div class="chart-card-header">
+              <div>
+                <h3>Evolución de Ingresos vs. Costos de Producción</h3>
+                <p class="text-muted">Comportamiento temporal de facturación total contra costos de producción</p>
+              </div>
+              <span class="chart-tag">Línea & Área</span>
+            </div>
+            <div class="chart-canvas-wrapper" style="height: 300px;">
+              <canvas id="chartEvolucion"></canvas>
+            </div>
+          </div>
+
+          <!-- Gráfico 2: Top 5 Trabajos / Artículos Más Vendidos -->
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <h3>Top 5 Trabajos / Artículos Más Vendidos</h3>
+                <p class="text-muted">Artículos con mayor volumen facturado</p>
+              </div>
+              <span class="chart-tag">Barras</span>
+            </div>
+            <div class="chart-canvas-wrapper" style="height: 280px;">
+              <canvas id="chartTopArticulos"></canvas>
+            </div>
+          </div>
+
+          <!-- Gráfico 3: Donut Chart Distribución Estado de Pagos -->
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <h3>Distribución de Estado de Entrega / Trabajos</h3>
+                <p class="text-muted">% Entregado, En Proceso, Pendiente, Sin Iniciar</p>
+              </div>
+              <span class="chart-tag">Donut</span>
+            </div>
+            <div class="chart-canvas-wrapper" style="height: 280px; position: relative;">
+              <canvas id="chartEstadoPagos"></canvas>
+            </div>
+          </div>
+
+          <!-- Gráfico 4: Comparativa Mensual Ingreso Neto vs Gastos Operativos -->
+          <div class="chart-card chart-card-wide">
+            <div class="chart-card-header">
+              <div>
+                <h3>Facturación Bruta vs. Salida Mensual (Gastos Fijos/Variables)</h3>
+                <p class="text-muted">Comparativa del rendimiento del negocio frente a gastos de operación</p>
+              </div>
+              <span class="chart-tag">Barras Agrupadas</span>
+            </div>
+            <div class="chart-canvas-wrapper" style="height: 290px;">
+              <canvas id="chartComparativaMensual"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           MÓDULO 2: GENERADOR DE COTIZACIONES ELEGANTES
+           ========================================================= -->
+      <section id="tab-cotizaciones" class="view-section">
+        <div class="section-header-row">
+          <div>
+            <h2>Generador de Cotizaciones Profesionales</h2>
+            <p class="text-muted">Crea, administra e imprime cotizaciones elegantes en PDF con el branding oficial de TuSoin.</p>
+          </div>
+          <div class="section-actions-right">
+            <button id="btnNewQuoteCreator" class="btn btn-primary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>+ Nueva Cotización</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Vista de Pestañas Internas de Cotizaciones: Historial vs Creador -->
+        <div class="quote-subnav-tabs">
+          <button class="quote-tab-btn active" id="btnQuoteTabList">Historial de Cotizaciones</button>
+          <button class="quote-tab-btn" id="btnQuoteTabEditor">Diseñador de Cotización</button>
+        </div>
+
+        <!-- 1. HISTORIAL DE COTIZACIONES -->
+        <div id="quoteListView" class="quote-subview">
+          <div class="filter-panel">
+            <div class="search-input-wrapper">
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" id="quoteSearchInput" placeholder="Buscar por cliente o número de cotización...">
+            </div>
+            <div class="filter-group">
+              <div class="filter-item">
+                <label for="quoteFilterStatus">Estado:</label>
+                <select id="quoteFilterStatus">
+                  <option value="all">Todos los estados</option>
+                  <option value="Emitida">Emitida</option>
+                  <option value="Aprobada">Aprobada</option>
+                  <option value="Facturada">Facturada</option>
+                  <option value="Vencida">Vencida</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 120px;">Nº Cotización</th>
+                  <th style="width: 105px;">Fecha Emisión</th>
+                  <th style="width: 105px;">Vence</th>
+                  <th>Cliente</th>
+                  <th>Contacto / Teléfono</th>
+                  <th style="text-align: right;">Total General</th>
+                  <th style="text-align: center; width: 110px;">Estado</th>
+                  <th style="text-align: center; width: 140px;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="quotesTableBody">
+                <!-- Render dinámico de cotizaciones -->
+              </tbody>
+            </table>
+
+            <div id="emptyQuotesMessage" class="empty-state" style="display:none;">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              <h3>No hay cotizaciones guardadas</h3>
+              <p>Haz clic en "+ Nueva Cotización" para generar tu primera propuesta profesional.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. DISEÑADOR Y PREVIEW DE COTIZACIÓN PROFESIONAL -->
+        <div id="quoteEditorView" class="quote-subview" style="display: none;">
+          <!-- Barra de Acciones del Editor -->
+          <div class="quote-editor-topbar">
+            <button id="btnBackToQuoteList" class="btn btn-outline">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              <span>Volver al Historial</span>
+            </button>
+            <div class="quote-editor-actions">
+              <button id="btnNewQuoteFromEditor" class="btn btn-outline" title="Iniciar nueva cotización en blanco">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span>+ Nueva</span>
+              </button>
+              <button id="btnSaveQuote" class="btn btn-outline" title="Guardar cambios en cotización">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                <span>Guardar Cotización</span>
+              </button>
+              <button id="btnConvertQuoteToSale" class="btn btn-outline" title="Transferir al Registro Diario de Ventas">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                <span>Convertir a Venta Diario</span>
+              </button>
+              <button id="btnPrintQuotePDF" class="btn btn-outline" title="Imprimir o Vista Previa del Navegador">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                <span>Imprimir / Vista Previa</span>
+              </button>
+              <button id="btnDownloadQuotePDF" class="btn btn-primary" title="Descargar Cotización directamente en archivo PDF">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <span>Descargar PDF</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- DOCUMENTO IMPRIMIBLE DE LA COTIZACIÓN -->
+          <div class="quote-document-container" id="printableQuoteSheet">
+            <!-- Encabezado Obligatorio con Branding -->
+            <div class="quote-doc-header">
+              <div class="quote-brand-block">
+                <img src="assets/logo.png" alt="TuSoin" class="quote-header-logo">
+                <div class="quote-company-details">
+                  <h2 class="quote-company-name">TuSoin</h2>
+                  <span class="quote-company-slogan">Tu solución inmediata</span>
+                  <div class="quote-company-meta">
+                    <p><strong>RNC:</strong> <span contenteditable="true" id="companyRncText" class="editable-inline" title="Clic para editar RNC">1-31-59570-7</span></p>
+                    <p><strong>Dirección:</strong> <span contenteditable="true" id="companyAddressText" class="editable-inline" title="Clic para editar dirección">C/ Juan de Moya #10, 1er Nivel, El Almirante, Sto. Dgo. Este, Rep. Dom.</span></p>
+                    <p><strong>Tel:</strong> <span contenteditable="true" id="companyPhoneText" class="editable-inline" title="Clic para editar teléfono">809-762-6064</span></p>
+                    <p><strong>Email:</strong> <span contenteditable="true" id="companyEmailText" class="editable-inline" title="Clic para editar correo">tusoin.rd@gmail.com</span> | <strong>Web:</strong> <span contenteditable="true" id="companyWebText" class="editable-inline" title="Clic para editar web">tusoin.rd</span></p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="quote-doc-badge-block">
+                <span class="quote-title-badge">COTIZACIÓN</span>
+                <div class="quote-meta-grid">
+                  <div class="quote-meta-item">
+                    <label>No. Cotización:</label>
+                    <input type="text" id="quoteDocNumber" class="quote-input-clean" value="COT-2026-001">
+                  </div>
+                  <div class="quote-meta-item">
+                    <label>Tipo Comprobante:</label>
+                    <select id="quoteNcfType" class="quote-input-clean">
+                      <option value="B15" selected>Gubernamental (B15)</option>
+                      <option value="B01">Crédito Fiscal (B01)</option>
+                      <option value="B02">Consumo Final (B02)</option>
+                      <option value="B14">Régimen Especial (B14)</option>
+                    </select>
+                  </div>
+                  <div class="quote-meta-item">
+                    <label>NCF No.:</label>
+                    <input type="text" id="quoteDocNcf" class="quote-input-clean" value="B1500000001" placeholder="B1500000001">
+                  </div>
+                  <div class="quote-meta-item">
+                    <label>Fecha Emisión:</label>
+                    <input type="date" id="quoteDocDate" class="quote-input-clean">
+                  </div>
+                  <div class="quote-meta-item">
+                    <label>Válida Hasta:</label>
+                    <input type="date" id="quoteDocExpiry" class="quote-input-clean">
+                  </div>
+                  <div class="quote-meta-item">
+                    <label>Estado:</label>
+                    <select id="quoteDocStatus" class="quote-input-clean">
+                      <option value="Emitida">Emitida</option>
+                      <option value="Aprobada">Aprobada</option>
+                      <option value="Facturada">Facturada</option>
+                      <option value="Vencida">Vencida</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- NCF Destacado Bar Oficial Gubernamental -->
+            <div class="quote-ncf-highlight-bar" id="quoteNcfBanner">
+              <span class="ncf-title" id="quoteNcfBannerTitle">Factura con Valor Fiscal Gubernamental</span>
+              <span class="ncf-code">NCF No.: <strong id="quoteNcfBannerVal">B1500000001</strong></span>
+            </div>
+
+            <!-- Datos del Cliente -->
+            <div class="quote-client-section">
+              <div class="quote-section-title">DATOS DEL CLIENTE / RECEPTOR</div>
+              <div class="quote-client-grid">
+                <div class="quote-field-group">
+                  <label for="quoteClientName">Cliente / Razón Social <span class="required">*</span>:</label>
+                  <input type="text" id="quoteClientName" list="clientsListDatalist" placeholder="Nombre completo del cliente o empresa..." class="quote-input-field" autocomplete="off">
+                  <datalist id="clientsListDatalist"></datalist>
+                </div>
+                <div class="quote-field-group">
+                  <label for="quoteClientRnc">RNC / Cédula <span class="required">*</span>:</label>
+                  <input type="text" id="quoteClientRnc" placeholder="Ej. 1-31-00000-0" class="quote-input-field">
+                </div>
+                <div class="quote-field-group quote-grid-full">
+                  <label for="quoteClientAddress">Domicilio / Dirección Física:</label>
+                  <input type="text" id="quoteClientAddress" placeholder="C/ Calle, No., Sector, Ciudad, Rep. Dom." class="quote-input-field">
+                </div>
+                <div class="quote-field-group">
+                  <label for="quoteClientPhone">Teléfono / WhatsApp:</label>
+                  <input type="text" id="quoteClientPhone" placeholder="(809) 000-0000" class="quote-input-field">
+                </div>
+                <div class="quote-field-group">
+                  <label for="quoteClientEmail">Correo Electrónico:</label>
+                  <input type="email" id="quoteClientEmail" placeholder="cliente@correo.com" class="quote-input-field">
+                </div>
+              </div>
+            </div>
+
+            <!-- Tabla de Renglones / Líneas de Cotización -->
+            <div class="quote-items-section">
+              <table class="quote-items-table" id="quoteItemsTable">
+                <thead>
+                  <tr>
+                    <th style="width: 40px; text-align: center;">#</th>
+                    <th style="width: 240px;">Seleccionar Producto / Servicio</th>
+                    <th>Descripción Detallada / Especificaciones</th>
+                    <th style="width: 80px; text-align: center;">Cant.</th>
+                    <th style="width: 120px; text-align: right;">Precio Unit.</th>
+                    <th style="width: 130px; text-align: right;">Total Renglón</th>
+                    <th class="no-print" style="width: 50px; text-align: center;"></th>
+                  </tr>
+                </thead>
+                <tbody id="quoteItemsTableBody">
+                  <!-- Renglones dinámicos generados desde app.js -->
+                </tbody>
+              </table>
+
+              <div class="quote-table-footer no-print">
+                <button type="button" id="btnAddQuoteRow" class="btn btn-secondary-sm">
+                  + Agregar Renglón
+                </button>
+                <span class="quote-helper-tip">💡 Al elegir un producto o servicio del dropdown se auto-cargará su precio actual del inventario.</span>
+              </div>
+            </div>
+
+            <!-- Totales e Impuestos -->
+            <div class="quote-totals-wrapper">
+              <div class="quote-terms-box">
+                <h4>Condiciones y Términos Comerciales</h4>
+                <textarea id="quoteTermsNotes" rows="4" class="quote-terms-input">1. Precios cotizados en Pesos Dominicanos (RD$).
+2. Para iniciar la producción o trabajo se requiere un anticipo del 50%, y el restante 50% contra entrega.
+3. Tiempo estimado de entrega: 3 a 5 días laborables luego de aprobado el diseño final.
+4. Esta cotización tiene una validez de 15 días a partir de su emisión.</textarea>
+              </div>
+
+              <div class="quote-calculations-card">
+                <div class="calc-row">
+                  <span>Subtotal:</span>
+                  <strong id="quoteSubtotalAmount">RD$ 0.00</strong>
+                </div>
+                <div class="calc-row">
+                  <div class="tax-toggle-wrap">
+                    <span>ITBIS (18%):</span>
+                    <label class="toggle-switch no-print">
+                      <input type="checkbox" id="quoteTaxToggle">
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                  <strong id="quoteTaxAmount">RD$ 0.00</strong>
+                </div>
+                <div class="calc-row">
+                  <span>Descuento ($):</span>
+                  <input type="number" id="quoteDiscountInput" step="0.01" min="0" value="0.00" class="discount-inline-input no-print">
+                  <strong id="quoteDiscountDisplay">RD$ 0.00</strong>
+                </div>
+                <div class="calc-row grand-total-row">
+                  <span>Total General:</span>
+                  <strong id="quoteGrandTotalAmount" class="grand-total-val">RD$ 0.00</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Firmas y Cierre de Cotización -->
+            <div class="quote-signatures-row">
+              <div class="signature-box">
+                <div class="signature-line"></div>
+                <span>Elaborado por: TuSoin</span>
+              </div>
+              <div class="signature-box">
+                <div class="signature-line"></div>
+                <span>Aceptado por: Cliente</span>
+              </div>
+            </div>
+
+            <div class="quote-doc-footer-note">
+              <p>TuSoin • Tu solución inmediata • ¡Gracias por su preferencia!</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           MÓDULO 1: GESTIÓN DE PRODUCTOS Y SERVICIOS (CRUD)
+           ========================================================= -->
+      <section id="tab-catalogo" class="view-section">
+        <div class="section-header-row">
+          <div>
+            <h2>Catálogo de Productos y Servicios</h2>
+            <p class="text-muted">Administra el inventario de artículos, productos gráficos y servicios con sincronización inmediata en cotizaciones.</p>
+          </div>
+          <button id="btnOpenProductModal" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>+ Nuevo Producto / Servicio</span>
+          </button>
+        </div>
+
+        <!-- Tarjetas Resumen de Catálogo -->
+        <div class="saas-kpi-grid">
+          <div class="saas-card">
+            <div class="saas-card-head">
+              <span class="saas-card-label">Total Ítems Registrados</span>
+              <div class="saas-card-icon icon-emerald">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+              </div>
+            </div>
+            <div class="saas-card-body">
+              <h2 class="saas-val" id="catalogTotalCount">0</h2>
+            </div>
+            <span class="saas-subtext">Base de datos sincronizada</span>
+          </div>
+
+          <div class="saas-card">
+            <div class="saas-card-head">
+              <span class="saas-card-label">Productos</span>
+              <div class="saas-card-icon icon-green">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+              </div>
+            </div>
+            <div class="saas-card-body">
+              <h2 class="saas-val text-positive" id="catalogProductsCount">0</h2>
+            </div>
+            <span class="saas-subtext">Bienes tangibles / insumos</span>
+          </div>
+
+          <div class="saas-card">
+            <div class="saas-card-head">
+              <span class="saas-card-label">Servicios</span>
+              <div class="saas-card-icon icon-blue">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+              </div>
+            </div>
+            <div class="saas-card-body">
+              <h2 class="saas-val" id="catalogServicesCount">0</h2>
+            </div>
+            <span class="saas-subtext">Mano de obra, diseño y confección</span>
+          </div>
+
+          <div class="saas-card">
+            <div class="saas-card-head">
+              <span class="saas-card-label">Artículos / Materiales</span>
+              <div class="saas-card-icon icon-rose">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon></svg>
+              </div>
+            </div>
+            <div class="saas-card-body">
+              <h2 class="saas-val" id="catalogArticlesCount">0</h2>
+            </div>
+            <span class="saas-subtext">Papelería y consumibles</span>
+          </div>
+        </div>
+
+        <!-- Filtros y Búsqueda de Catálogo -->
+        <div class="filter-panel">
+          <div class="search-input-wrapper">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="catalogSearchInput" placeholder="Buscar por nombre, descripción o categoría...">
+          </div>
+          <div class="filter-group">
+            <div class="filter-item">
+              <label for="catalogCategoryFilter">Categoría:</label>
+              <select id="catalogCategoryFilter">
+                <option value="all">Todas las categorías</option>
+                <option value="Producto">Producto</option>
+                <option value="Servicio">Servicio</option>
+                <option value="Artículo">Artículo</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de Productos y Servicios -->
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nombre del Ítem</th>
+                <th style="width: 140px;">Categoría</th>
+                <th>Descripción / Especificaciones</th>
+                <th style="text-align: right; width: 140px;">Precio Unitario</th>
+                <th style="text-align: right; width: 140px;">Costo Estimado</th>
+                <th style="text-align: center; width: 110px;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="catalogTableBody">
+              <!-- Render dinámico de productos -->
+            </tbody>
+          </table>
+
+          <div id="emptyCatalogMessage" class="empty-state" style="display:none;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+            <h3>No se encontraron productos o servicios</h3>
+            <p>Utiliza el botón "+ Nuevo Producto / Servicio" para añadir tu primer artículo al catálogo.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           SECCIÓN: REGISTRO DIARIO (VISTA PRINCIPAL DESCRITA)
+           ========================================================= -->
+      <section id="tab-diario" class="view-section">
+        <!-- KPI Summary Cards Originales con datos reales -->
+        <div class="kpi-grid">
+          <div class="kpi-card card-ventas">
+            <div class="kpi-header">
+              <span class="kpi-label">Total Ventas</span>
+              <div class="kpi-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+              </div>
+            </div>
+            <div class="kpi-value" id="kpiTotalVentas">RD$ 0.00</div>
+            <span class="kpi-subtext" id="kpiCantVentas">0 transacciones</span>
+          </div>
+
+          <div class="kpi-card card-costos">
+            <div class="kpi-header">
+              <span class="kpi-label">Costos Producción</span>
+              <div class="kpi-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+              </div>
+            </div>
+            <div class="kpi-value" id="kpiTotalCostos">RD$ 0.00</div>
+            <span class="kpi-subtext" id="kpiMargenCosto">Costo directo</span>
+          </div>
+
+          <div class="kpi-card card-ganancia">
+            <div class="kpi-header">
+              <span class="kpi-label">Margen ($) Ganancia</span>
+              <div class="kpi-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+              </div>
+            </div>
+            <div class="kpi-value" id="kpiGananciaBruta">RD$ 0.00</div>
+            <span class="kpi-subtext" id="kpiMargenPorc">Margen Bruto: 0%</span>
+          </div>
+
+          <div class="kpi-card card-cobrado">
+            <div class="kpi-header">
+              <span class="kpi-label">Total Abonos Cliente</span>
+              <div class="kpi-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              </div>
+            </div>
+            <div class="kpi-value" id="kpiTotalCobrado">RD$ 0.00</div>
+            <span class="kpi-subtext" id="kpiEfectivoRecibido">Total recaudado</span>
+          </div>
+
+          <div class="kpi-card card-porcobrar">
+            <div class="kpi-header">
+              <span class="kpi-label">Pendiente Cliente</span>
+              <div class="kpi-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              </div>
+            </div>
+            <div class="kpi-value" id="kpiTotalPorCobrar">RD$ 0.00</div>
+            <span class="kpi-subtext" id="kpiPendientesCount">Cuentas por cobrar</span>
+          </div>
+
+          <div class="kpi-card card-porcobrar">
+            <div class="kpi-header">
+              <span class="kpi-label">Pendiente NorthCentral</span>
+              <div class="kpi-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon></svg>
+              </div>
+            </div>
+            <div class="kpi-value" id="kpiPendienteNorthCentral">RD$ 0.00</div>
+            <span class="kpi-subtext" id="kpiPagadoNorthCentral">Pagado: RD$ 0.00</span>
+          </div>
+        </div>
+
+        <!-- Barra de Filtros y Búsqueda -->
+        <div class="filter-panel">
+          <div class="search-input-wrapper">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="searchInput" placeholder="Buscar por cliente, factura o artículo/trabajo...">
+          </div>
+
+          <div class="filter-group">
+            <div class="filter-item">
+              <label for="filterDateStart">Desde:</label>
+              <input type="date" id="filterDateStart">
+            </div>
+            <div class="filter-item">
+              <label for="filterDateEnd">Hasta:</label>
+              <input type="date" id="filterDateEnd">
+            </div>
+            <div class="filter-item">
+              <label for="filterStatus">Estado:</label>
+              <select id="filterStatus">
+                <option value="all">Todos los estados</option>
+                <option value="Entregado">Entregado</option>
+                <option value="En Proceso">En Proceso</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="Sin Iniciar">Sin Iniciar</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label for="filterPaymentStatus">Pago Cliente:</label>
+              <select id="filterPaymentStatus">
+                <option value="all">Todos los balances</option>
+                <option value="pagado">Saldado (Balance 0)</option>
+                <option value="pendiente">Con saldo pendiente</option>
+              </select>
+            </div>
+            <button id="btnClearFilters" class="btn btn-secondary-sm" title="Restablecer filtros">Limpiar</button>
+          </div>
+        </div>
+
+        <!-- Tabla Interactiva de Registros Reales -->
+        <div class="table-container">
+          <table class="data-table" id="salesTable">
+            <thead>
+              <tr>
+                <th style="width: 80px;">Nº Factura</th>
+                <th style="width: 95px;">Fecha</th>
+                <th>Cliente</th>
+                <th style="width: 60px; text-align: center;">Cant.</th>
+                <th>Artículo / Trabajo</th>
+                <th style="text-align: right;">Costo Prod.</th>
+                <th style="text-align: right;">Total Venta</th>
+                <th style="text-align: right;">Abono Cliente</th>
+                <th style="text-align: right;">Pendiente Cliente</th>
+                <th style="text-align: right;">Pagado NorthCentral</th>
+                <th style="text-align: right;">Pendiente NorthCentral</th>
+                <th style="text-align: right;">Margen ($)</th>
+                <th style="text-align: center; width: 105px;">Estado Trabajo</th>
+                <th style="text-align: center; width: 95px;">Estado Costo</th>
+                <th style="text-align: center; width: 90px;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="salesTableBody">
+              <!-- Renderizado dinámico desde app.js -->
+            </tbody>
+          </table>
+
+          <div id="emptyTableMessage" class="empty-state" style="display:none;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+            <h3>No se encontraron registros</h3>
+            <p>Ajusta los filtros de búsqueda o agrega un nuevo trabajo.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           SECCIÓN: SALIDA MENSUAL (GASTOS OPERATIVOS)
+           ========================================================= -->
+      <section id="tab-gastos" class="view-section">
+        <div class="section-header-row">
+          <div>
+            <h2>Salida Mensual de Gastos (Hoja de Control)</h2>
+            <p class="text-muted">Control de gastos fijos y variables del negocio: alquiler, nómina, electricidad, insumos, etc.</p>
+          </div>
+          <button id="btnOpenNewExpenseModal" class="btn btn-primary">
+            + Nuevo Gasto
+          </button>
+        </div>
+
+        <div class="expenses-summary-cards">
+          <div class="mini-card">
+            <span>Total Gastos Acumulados</span>
+            <h3 id="expensesTotalAmount">RD$ 0.00</h3>
+          </div>
+          <div class="mini-card">
+            <span>Total Gasto Fijo</span>
+            <h3 id="expensesFixedTotal">RD$ 0.00</h3>
+          </div>
+          <div class="mini-card">
+            <span>Total Gasto Variable</span>
+            <h3 id="expensesVariableTotal">RD$ 0.00</h3>
+          </div>
+          <div class="mini-card">
+            <span>Registros de Gasto</span>
+            <h3 id="expensesCount">0</h3>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width: 110px;">Fecha</th>
+                <th>Categoría</th>
+                <th>Descripción / Detalle</th>
+                <th style="text-align: right;">Monto</th>
+                <th style="text-align: center; width: 100px;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="expensesTableBody">
+              <!-- Renderizado de gastos -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           SECCIÓN: INGRESO NETO (REPORTES GLOBALES DE GANANCIAS)
+           ========================================================= -->
+      <section id="tab-ingreso-neto" class="view-section">
+        <div class="section-header-row">
+          <div>
+            <h2>Ingreso Neto y Rentabilidad Global Real</h2>
+            <p class="text-muted">Cálculo de Utilidad Neta Real = Ventas - Costo de Producción - Salida Mensual de Gastos</p>
+          </div>
+          <div class="date-month-filter">
+            <label for="monthFilterNet">Filtrar Mes:</label>
+            <input type="month" id="monthFilterNet">
+          </div>
+        </div>
+
+        <div class="profit-waterfall-card">
+          <div class="waterfall-header">
+            <h3>Desglose Financiero Integral ("TuSoin")</h3>
+          </div>
+          <div class="waterfall-metrics">
+            <div class="waterfall-row">
+              <span class="waterfall-title">(+) Facturación Total Bruta (Ventas)</span>
+              <span class="waterfall-num text-positive" id="netVentasGross">RD$ 0.00</span>
+            </div>
+            <div class="waterfall-row sub-row">
+              <span class="waterfall-title">(-) Costos Directos de Producción</span>
+              <span class="waterfall-num text-negative" id="netCostosDirectos">- RD$ 0.00</span>
+            </div>
+            <div class="waterfall-row total-row">
+              <span class="waterfall-title">(=) Margen / Ganancia Bruta Operativa</span>
+              <span class="waterfall-num" id="netGananciaBruta">RD$ 0.00</span>
+            </div>
+            <div class="waterfall-row sub-row">
+              <span class="waterfall-title">(-) Salida Mensual (Gastos Fijos + Variables)</span>
+              <span class="waterfall-num text-negative" id="netGastosOperativos">- RD$ 0.00</span>
+            </div>
+            <div class="waterfall-row grand-total-row">
+              <div class="grand-total-label">
+                <strong>(=) Utilidad Neta Final Real</strong>
+                <small id="netMarginPercent">Margen Neto Real: 0%</small>
+              </div>
+              <span class="waterfall-grand-num" id="netUtilidadReal">RD$ 0.00</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           SECCIÓN: PAGOS A PROVEEDORES / TERCEROS
+           ========================================================= -->
+      <section id="tab-proveedores" class="view-section">
+        <div class="section-header-row">
+          <div>
+            <h2>Cuentas y Pagos a Proveedores / Terceros</h2>
+            <p class="text-muted">Control de compras de insumos, materiales y saldos pendientes con NorthCentral y otros suplidores</p>
+          </div>
+          <button id="btnOpenSupplierModal" class="btn btn-primary">
+            + Registrar Compra / Proveedor
+          </button>
+        </div>
+
+        <div class="expenses-summary-cards">
+          <div class="mini-card">
+            <span>Deuda Total a Proveedores</span>
+            <h3 id="suppliersTotalDebt" class="text-negative">RD$ 0.00</h3>
+          </div>
+          <div class="mini-card">
+            <span>Monto Pagado a la Fecha</span>
+            <h3 id="suppliersTotalPaid" class="text-positive">RD$ 0.00</h3>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Proveedor / Suplidor</th>
+                <th>Concepto / Material</th>
+                <th>Fecha Compra</th>
+                <th style="text-align: right;">Total Compra</th>
+                <th style="text-align: right;">Pagado</th>
+                <th style="text-align: right;">Saldo Por Pagar</th>
+                <th style="text-align: center; width: 110px;">Estado</th>
+                <th style="text-align: center; width: 100px;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="suppliersTableBody">
+              <!-- Renderizado de suplidores -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- =========================================================
+       MODALES DE LA APLICACIÓN
+       ========================================================= -->
+
+  <!-- MODAL: REGISTRO / EDICIÓN DE VENTA (CAMPOS REALES + DROPDOWN CATÁLOGO) -->
+  <div class="modal-overlay" id="saleModal" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="saleModalTitle">Registrar Venta / Trabajo (Hoja de Control)</h3>
+        <button class="close-modal-btn" data-close="saleModal">&times;</button>
+      </div>
+      <form id="saleForm">
+        <input type="hidden" id="saleId">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="saleInvoice">Nº de Factura <span class="required">*</span></label>
+              <div class="input-with-button">
+                <input type="number" id="saleInvoice" required placeholder="Ej. 93">
+                <button type="button" id="btnAutoInvoice" class="btn-input-addon" title="Autogenerar siguiente número">Auto</button>
+              </div>
+            </div>
+            <div class="form-group col-6">
+              <label for="saleDate">Fecha <span class="required">*</span></label>
+              <input type="date" id="saleDate" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-8">
+              <label for="saleClient">Cliente <span class="required">*</span></label>
+              <input type="text" id="saleClient" required placeholder="Nombre del cliente o negocio">
+            </div>
+            <div class="form-group col-4">
+              <label for="saleQuantity">Cantidad (Unid.) <span class="required">*</span></label>
+              <input type="number" id="saleQuantity" step="0.01" min="0" required placeholder="1.00">
+            </div>
+          </div>
+
+          <!-- Selección Rápida desde Catálogo de Productos y Servicios -->
+          <div class="form-group">
+            <div class="label-with-addon">
+              <label for="saleProductSelect">Cargar desde Catálogo de Productos / Servicios (Opcional):</label>
+            </div>
+            <select id="saleProductSelect" class="form-select-catalog">
+              <option value="">-- Seleccionar producto o servicio para auto-llenar --</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="saleDescription">Artículo / Trabajo <span class="required">*</span></label>
+            <textarea id="saleDescription" rows="2" required placeholder="Descripción del trabajo (ej. Letrero 107x37 vinyl, polos dryfit, etc.)"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="saleCost">Costo de Producción <span class="required">*</span></label>
+              <div class="currency-input-wrap">
+                <span class="currency-prefix">RD$</span>
+                <input type="number" id="saleCost" step="0.01" min="0" required placeholder="0.00">
+              </div>
+            </div>
+            <div class="form-group col-6">
+              <label for="saleTotal">Total Venta <span class="required">*</span></label>
+              <div class="currency-input-wrap">
+                <span class="currency-prefix">RD$</span>
+                <input type="number" id="saleTotal" step="0.01" min="0" required placeholder="0.00">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="saleAbono">Abono Cliente</label>
+              <div class="currency-input-wrap">
+                <span class="currency-prefix">RD$</span>
+                <input type="number" id="saleAbono" step="0.01" min="0" value="0.00">
+              </div>
+            </div>
+            <div class="form-group col-6">
+              <label for="saleEstadoTrabajo">Estado del Trabajo</label>
+              <select id="saleEstadoTrabajo">
+                <option value="Entregado">Entregado</option>
+                <option value="En Proceso">En Proceso</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="Sin Iniciar">Sin Iniciar</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="saleMontoPagadoNC">Monto Pagado a NorthCentral</label>
+              <div class="currency-input-wrap">
+                <span class="currency-prefix">RD$</span>
+                <input type="number" id="saleMontoPagadoNC" step="0.01" min="0" value="0.00">
+              </div>
+            </div>
+            <div class="form-group col-6">
+              <label for="saleMontoPendienteNC">Monto Pendiente a NorthCentral</label>
+              <div class="currency-input-wrap">
+                <span class="currency-prefix">RD$</span>
+                <input type="number" id="saleMontoPendienteNC" step="0.01" min="0" value="0.00">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="saleEstadoCostoProd">Estado Costo de Producción</label>
+            <select id="saleEstadoCostoProd">
+              <option value="PAGADO">PAGADO</option>
+              <option value="PENDIENTE">PENDIENTE</option>
+              <option value="NO PAGADO">NO PAGADO</option>
+              <option value="">(Sin definir)</option>
+            </select>
+          </div>
+
+          <!-- Resumen de cálculos en vivo dentro del formulario -->
+          <div class="calculation-preview-box">
+            <div class="calc-item">
+              <span class="calc-lbl">Pendiente Cliente (Total Venta - Abono):</span>
+              <strong class="calc-val" id="liveBalancePendiente">RD$ 0.00</strong>
+            </div>
+            <div class="calc-item">
+              <span class="calc-lbl">Margen de Ganancia ($) (Total Venta - Costo):</span>
+              <strong class="calc-val text-positive" id="liveGananciaBruta">RD$ 0.00</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close="saleModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveSale">Guardar Registro</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTRAR / EDITAR PRODUCTO O SERVICIO (MÓDULO 1) -->
+  <div class="modal-overlay" id="productModal" style="display: none;">
+    <div class="modal-dialog modal-dialog-sm">
+      <div class="modal-header">
+        <h3 id="productModalTitle">Registrar Producto / Servicio</h3>
+        <button class="close-modal-btn" data-close="productModal">&times;</button>
+      </div>
+      <form id="productForm">
+        <input type="hidden" id="productId">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="prodName">Nombre del Ítem <span class="required">*</span></label>
+            <input type="text" id="prodName" required placeholder="Ej. Letrero Acrílico 3D con LED">
+          </div>
+
+          <div class="form-group">
+            <label for="prodCategory">Categoría <span class="required">*</span></label>
+            <select id="prodCategory" required>
+              <option value="Producto">Producto (Bien físico o manufacturado)</option>
+              <option value="Servicio">Servicio (Diseño, rotulación, instalación)</option>
+              <option value="Artículo">Artículo (Papelería, consumible)</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="prodPrice">Precio Unitario Venta <span class="required">*</span></label>
+              <div class="currency-input-wrap">
+                <span class="currency-prefix">RD$</span>
+                <input type="number" id="prodPrice" step="0.01" min="0" required placeholder="0.00">
+              </div>
+            </div>
+            <div class="form-group col-6">
+              <label for="prodCost">Costo Estimado Producción</label>
+              <div class="currency-input-wrap">
+                <span class="currency-prefix">RD$</span>
+                <input type="number" id="prodCost" step="0.01" min="0" value="0.00" placeholder="0.00">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="prodDescription">Descripción / Especificaciones (Opcional)</label>
+            <textarea id="prodDescription" rows="2" placeholder="Materiales, dimensiones estándar, tiempo de confección..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close="productModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveProduct">Guardar en Catálogo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTRAR ABONO CLIENTE -->
+  <div class="modal-overlay" id="paymentModal" style="display: none;">
+    <div class="modal-dialog modal-dialog-sm">
+      <div class="modal-header">
+        <h3>Registrar Abono Cliente</h3>
+        <button class="close-modal-btn" data-close="paymentModal">&times;</button>
+      </div>
+      <form id="paymentForm">
+        <input type="hidden" id="paySaleId">
+        <div class="modal-body">
+          <div class="invoice-summary-brief">
+            <p><strong>Factura #:</strong> <span id="payInvoiceNum">---</span></p>
+            <p><strong>Cliente:</strong> <span id="payClientName">---</span></p>
+            <p><strong>Total Venta:</strong> <span id="payTotalVenta">---</span></p>
+            <p><strong>Abono a la fecha:</strong> <span id="payCurrentAbono">---</span></p>
+            <p><strong>Pendiente Cliente:</strong> <span id="payCurrentBalance" class="text-negative">---</span></p>
+          </div>
+
+          <div class="form-group">
+            <label for="payAmount">Monto del Nuevo Abono <span class="required">*</span></label>
+            <div class="currency-input-wrap">
+              <span class="currency-prefix">RD$</span>
+              <input type="number" id="payAmount" step="0.01" min="0.01" required placeholder="0.00">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="payDate">Fecha del Abono</label>
+            <input type="date" id="payDate" required>
+          </div>
+
+          <div class="form-group">
+            <label for="payMethod">Método de Pago</label>
+            <select id="payMethod">
+              <option value="Transferencia">Transferencia Bancaria</option>
+              <option value="Efectivo">Efectivo</option>
+              <option value="Cheque">Cheque</option>
+              <option value="Tarjeta">Tarjeta</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close="paymentModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Registrar Abono</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVO GASTO OPERATIVO (SALIDA MENSUAL) -->
+  <div class="modal-overlay" id="expenseModal" style="display: none;">
+    <div class="modal-dialog modal-dialog-sm">
+      <div class="modal-header">
+        <h3>Registrar Salida de Gasto</h3>
+        <button class="close-modal-btn" data-close="expenseModal">&times;</button>
+      </div>
+      <form id="expenseForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="expenseDate">Fecha <span class="required">*</span></label>
+            <input type="date" id="expenseDate" required>
+          </div>
+          <div class="form-group">
+            <label for="expenseCategory">Categoría <span class="required">*</span></label>
+            <select id="expenseCategory">
+              <option value="Gasto variable">Gasto variable</option>
+              <option value="Gasto Fijo">Gasto Fijo</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="expenseConcept">Descripción / Detalle <span class="required">*</span></label>
+            <textarea id="expenseConcept" rows="2" required placeholder="Detalle del gasto (ej. Pago local, Edeeste luz, uber, etc.)"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="expenseAmount">Monto <span class="required">*</span></label>
+            <div class="currency-input-wrap">
+              <span class="currency-prefix">RD$</span>
+              <input type="number" id="expenseAmount" step="0.01" min="0.01" required placeholder="0.00">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close="expenseModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Gasto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTRAR COMPRA / PROVEEDOR -->
+  <div class="modal-overlay" id="supplierModal" style="display: none;">
+    <div class="modal-dialog modal-dialog-sm">
+      <div class="modal-header">
+        <h3>Registrar Proveedor / Tercero</h3>
+        <button class="close-modal-btn" data-close="supplierModal">&times;</button>
+      </div>
+      <form id="supplierForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="suppName">Nombre del Proveedor <span class="required">*</span></label>
+            <input type="text" id="suppName" required placeholder="Ej. NorthCentral / G-Copy / Planeta">
+          </div>
+          <div class="form-group">
+            <label for="suppConcept">Concepto / Material <span class="required">*</span></label>
+            <input type="text" id="suppConcept" required placeholder="Ej. Vinil, Camisetas, DTF">
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="suppDate">Fecha</label>
+              <input type="date" id="suppDate" required>
+            </div>
+            <div class="form-group col-6">
+              <label for="suppTotal">Total Compra</label>
+              <div class="currency-input-wrap">
+                <span class="currency-prefix">RD$</span>
+                <input type="number" id="suppTotal" step="0.01" min="0" required placeholder="0.00">
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="suppPaid">Monto Pagado</label>
+            <div class="currency-input-wrap">
+              <span class="currency-prefix">RD$</span>
+              <input type="number" id="suppPaid" step="0.01" min="0" value="0.00">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close="supplierModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Registro</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Carga de Base de Datos Real de Excel y Script principal -->
+  <script src="initialData.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

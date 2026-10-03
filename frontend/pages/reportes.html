@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reportes — TuSoinRD</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+
+  <nav class="bg-blue-700 text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <span class="text-xl font-bold">💼 TuSoinRD</span>
+      <div class="flex gap-4 text-sm font-medium">
+        <a href="../index.html" class="hover:text-blue-200">Dashboard</a>
+        <a href="clientes.html" class="hover:text-blue-200">Clientes</a>
+        <a href="ingresos.html" class="hover:text-blue-200">Ingresos</a>
+        <a href="egresos.html"  class="hover:text-blue-200">Egresos</a>
+        <a href="reportes.html" class="hover:text-blue-200 underline">Reportes</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">📈 Reportes Financieros</h1>
+
+    <!-- Filtro por año -->
+    <div class="flex gap-3 mb-6 items-end">
+      <div>
+        <label class="text-xs text-gray-500 block mb-1">Año</label>
+        <select id="anioSelect" onchange="cargarTodo()" class="border rounded px-3 py-2 text-sm">
+          <option value="2024">2024</option>
+          <option value="2025">2025</option>
+          <option value="2026" selected>2026</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- KPIs del año -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div class="bg-white rounded-xl shadow p-5 border-l-4 border-green-500">
+        <p class="text-xs text-gray-500 uppercase font-semibold">Ingresos del Año</p>
+        <p class="text-2xl font-bold text-green-600 mt-1" id="kpiIngresos">—</p>
+      </div>
+      <div class="bg-white rounded-xl shadow p-5 border-l-4 border-red-500">
+        <p class="text-xs text-gray-500 uppercase font-semibold">Egresos del Año</p>
+        <p class="text-2xl font-bold text-red-500 mt-1" id="kpiEgresos">—</p>
+      </div>
+      <div class="bg-white rounded-xl shadow p-5 border-l-4 border-blue-500">
+        <p class="text-xs text-gray-500 uppercase font-semibold">Balance Neto</p>
+        <p class="text-2xl font-bold text-blue-700 mt-1" id="kpiBalance">—</p>
+      </div>
+    </div>
+
+    <!-- Gráficas -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div class="bg-white rounded-xl shadow p-5">
+        <h2 class="font-semibold text-gray-700 mb-4">Ingresos vs Egresos Mensuales</h2>
+        <canvas id="graficaBarras" height="200"></canvas>
+      </div>
+      <div class="bg-white rounded-xl shadow p-5">
+        <h2 class="font-semibold text-gray-700 mb-4">🏆 Top Clientes por Ingresos</h2>
+        <canvas id="graficaClientes" height="200"></canvas>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/api.js"></script>
+  <script>
+    let graficaBarras = null;
+    let graficaClientes = null;
+
+    const fmt = (n) => new Intl.NumberFormat('es-DO', {
+      style: 'currency', currency: 'DOP', maximumFractionDigits: 0
+    }).format(n);
+
+    async function cargarKPIs(anio) {
+      const hoy = new Date();
+      const desde = `${anio}-01-01`;
+      const hasta = `${anio}-12-31`;
+      try {
+        const data = await apiGet(`/reportes/resumen?fecha_desde=${desde}&fecha_hasta=${hasta}`);
+        document.getElementById('kpiIngresos').textContent = fmt(data.total_ingresos);
+        document.getElementById('kpiEgresos').textContent  = fmt(data.total_egresos);
+        document.getElementById('kpiBalance').textContent  = fmt(data.balance);
+        const el = document.getElementById('kpiBalance');
+        el.className = `text-2xl font-bold mt-1 ${data.balance >= 0 ? 'text-blue-700' : 'text-red-600'}`;
+      } catch(e) { console.error(e); }
+    }
+
+    async function cargarGraficaBarras(anio) {
+      try {
+        const data = await apiGet(`/reportes/por-mes?anio=${anio}`);
+        const ctx = document.getElementById('graficaBarras').getContext('2d');
+        if (graficaBarras) graficaBarras.destroy();
+        graficaBarras = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: data.labels,
+            datasets: [
+              { label: 'Ingresos', data: data.ingresos, backgroundColor: '#22c55e' },
+              { label: 'Egresos',  data: data.egresos,  backgroundColor: '#ef4444' },
+            ]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { position: 'top' } },
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+      } catch(e) { console.error(e); }
+    }
+
+    async function cargarGraficaClientes() {
+      try {
+        const data = await apiGet('/reportes/top-clientes?limite=7');
+        const ctx = document.getElementById('graficaClientes').getContext('2d');
+        if (graficaClientes) graficaClientes.destroy();
+        if (!data.length) return;
+        graficaClientes = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: data.map(d => d.cliente),
+            datasets: [{
+              data: data.map(d => d.total),
+              backgroundColor: ['#3b82f6','#22c55e','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6'],
+            }]
+          },
+          options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+      } catch(e) { console.error(e); }
+    }
+
+    function cargarTodo() {
+      const anio = document.getElementById('anioSelect').value;
+      cargarKPIs(anio);
+      cargarGraficaBarras(anio);
+      cargarGraficaClientes();
+    }
+
+    cargarTodo();
+  </script>
+</body>
+</html>

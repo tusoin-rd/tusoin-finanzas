@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Clientes — TuSoinRD</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+
+  <!-- Navbar -->
+  <nav class="bg-blue-700 text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <span class="text-xl font-bold">💼 TuSoinRD</span>
+      <div class="flex gap-4 text-sm font-medium">
+        <a href="../index.html"       class="hover:text-blue-200">Dashboard</a>
+        <a href="clientes.html"       class="hover:text-blue-200 underline">Clientes</a>
+        <a href="ingresos.html"       class="hover:text-blue-200">Ingresos</a>
+        <a href="egresos.html"        class="hover:text-blue-200">Egresos</a>
+        <a href="reportes.html"       class="hover:text-blue-200">Reportes</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">👤 Clientes</h1>
+      <button onclick="abrirModal()" class="bg-blue-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-800">
+        ➕ Nuevo Cliente
+      </button>
+    </div>
+
+    <!-- Búsqueda -->
+    <div class="flex gap-2 mb-4">
+      <input id="busqueda" type="text" placeholder="Buscar por nombre o RNC..."
+        class="border rounded-lg px-3 py-2 text-sm flex-1 max-w-sm"
+        oninput="cargarClientes()" />
+    </div>
+
+    <!-- Tabla -->
+    <div class="bg-white rounded-xl shadow overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+          <tr>
+            <th class="px-4 py-3 text-left">Nombre</th>
+            <th class="px-4 py-3 text-left">RNC/Cédula</th>
+            <th class="px-4 py-3 text-left">Teléfono</th>
+            <th class="px-4 py-3 text-left">Email</th>
+            <th class="px-4 py-3 text-left">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tablaClientes" class="divide-y divide-gray-100">
+          <tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Modal -->
+  <div id="modal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4">
+      <h2 id="modalTitulo" class="text-lg font-bold text-gray-800 mb-4">Nuevo Cliente</h2>
+      <form id="formCliente" onsubmit="guardarCliente(event)" class="space-y-3">
+        <input type="hidden" id="clienteId"/>
+        <div>
+          <label class="text-xs text-gray-500">Nombre *</label>
+          <input id="fNombre" required type="text" class="border rounded-lg px-3 py-2 w-full text-sm mt-1"/>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-gray-500">RNC/Cédula</label>
+            <input id="fRnc" type="text" class="border rounded-lg px-3 py-2 w-full text-sm mt-1"/>
+          </div>
+          <div>
+            <label class="text-xs text-gray-500">Teléfono</label>
+            <input id="fTelefono" type="text" class="border rounded-lg px-3 py-2 w-full text-sm mt-1" placeholder="809-000-0000"/>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Email</label>
+          <input id="fEmail" type="email" class="border rounded-lg px-3 py-2 w-full text-sm mt-1"/>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Dirección</label>
+          <input id="fDireccion" type="text" class="border rounded-lg px-3 py-2 w-full text-sm mt-1"/>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Notas</label>
+          <textarea id="fNotas" rows="2" class="border rounded-lg px-3 py-2 w-full text-sm mt-1"></textarea>
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button type="submit" class="flex-1 bg-blue-700 text-white py-2 rounded-lg text-sm hover:bg-blue-800">
+            Guardar
+          </button>
+          <button type="button" onclick="cerrarModal()" class="flex-1 border py-2 rounded-lg text-sm hover:bg-gray-50">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    async function cargarClientes() {
+      const buscar = document.getElementById('busqueda').value;
+      const params = buscar ? `?buscar=${encodeURIComponent(buscar)}` : '';
+      try {
+        const clientes = await apiGet(`/clientes/${params}`);
+        const tbody = document.getElementById('tablaClientes');
+        if (!clientes.length) {
+          tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">Sin clientes registrados</td></tr>';
+          return;
+        }
+        tbody.innerHTML = clientes.map(c => `
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-3 font-medium text-gray-800">${c.nombre}</td>
+            <td class="px-4 py-3 text-gray-600">${c.rnc_cedula || '—'}</td>
+            <td class="px-4 py-3 text-gray-600">${c.telefono || '—'}</td>
+            <td class="px-4 py-3 text-gray-600">${c.email || '—'}</td>
+            <td class="px-4 py-3">
+              <button onclick="editarCliente(${c.id})"
+                class="text-blue-600 hover:underline text-xs mr-3">Editar</button>
+              <button onclick="eliminarCliente(${c.id}, '${c.nombre}')"
+                class="text-red-500 hover:underline text-xs">Eliminar</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch(e) {
+        showToast('Error cargando clientes: ' + e.message, 'error');
+      }
+    }
+
+    function abrirModal(cliente = null) {
+      document.getElementById('modal').classList.remove('hidden');
+      document.getElementById('modalTitulo').textContent = cliente ? 'Editar Cliente' : 'Nuevo Cliente';
+      document.getElementById('clienteId').value  = cliente?.id || '';
+      document.getElementById('fNombre').value    = cliente?.nombre || '';
+      document.getElementById('fRnc').value       = cliente?.rnc_cedula || '';
+      document.getElementById('fTelefono').value  = cliente?.telefono || '';
+      document.getElementById('fEmail').value     = cliente?.email || '';
+      document.getElementById('fDireccion').value = cliente?.direccion || '';
+      document.getElementById('fNotas').value     = cliente?.notas || '';
+    }
+
+    function cerrarModal() {
+      document.getElementById('modal').classList.add('hidden');
+    }
+
+    async function editarCliente(id) {
+      try {
+        const c = await apiGet(`/clientes/${id}`);
+        abrirModal(c);
+      } catch(e) { showToast(e.message, 'error'); }
+    }
+
+    async function guardarCliente(e) {
+      e.preventDefault();
+      const id = document.getElementById('clienteId').value;
+      const body = {
+        nombre:    document.getElementById('fNombre').value,
+        rnc_cedula: document.getElementById('fRnc').value || null,
+        telefono:  document.getElementById('fTelefono').value || null,
+        email:     document.getElementById('fEmail').value || null,
+        direccion: document.getElementById('fDireccion').value || null,
+        notas:     document.getElementById('fNotas').value || null,
+      };
+      try {
+        if (id) {
+          await apiPut(`/clientes/${id}`, body);
+          showToast('Cliente actualizado ✅');
+        } else {
+          await apiPost('/clientes/', body);
+          showToast('Cliente creado ✅');
+        }
+        cerrarModal();
+        cargarClientes();
+      } catch(e) { showToast(e.message, 'error'); }
+    }
+
+    async function eliminarCliente(id, nombre) {
+      if (!confirm(`¿Eliminar al cliente "${nombre}"?`)) return;
+      try {
+        await apiDelete(`/clientes/${id}`);
+        showToast('Cliente eliminado');
+        cargarClientes();
+      } catch(e) { showToast(e.message, 'error'); }
+    }
+
+    // Cerrar modal con Escape
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModal(); });
+
+    cargarClientes();
+  </script>
+</body>
+</html>

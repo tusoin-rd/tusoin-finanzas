@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Egresos — TuSoinRD</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+
+  <nav class="bg-blue-700 text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <span class="text-xl font-bold">💼 TuSoinRD</span>
+      <div class="flex gap-4 text-sm font-medium">
+        <a href="../index.html" class="hover:text-blue-200">Dashboard</a>
+        <a href="clientes.html" class="hover:text-blue-200">Clientes</a>
+        <a href="ingresos.html" class="hover:text-blue-200">Ingresos</a>
+        <a href="egresos.html"  class="hover:text-blue-200 underline">Egresos</a>
+        <a href="reportes.html" class="hover:text-blue-200">Reportes</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">📤 Egresos</h1>
+      <button onclick="abrirModal()" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600">
+        ➕ Nuevo Egreso
+      </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="flex flex-wrap gap-3 mb-4 items-end">
+      <div>
+        <label class="text-xs text-gray-500 block mb-1">Desde</label>
+        <input type="date" id="filtroDesde" class="border rounded px-3 py-1.5 text-sm"/>
+      </div>
+      <div>
+        <label class="text-xs text-gray-500 block mb-1">Hasta</label>
+        <input type="date" id="filtroHasta" class="border rounded px-3 py-1.5 text-sm"/>
+      </div>
+      <button onclick="cargarEgresos()" class="bg-blue-700 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-800">Filtrar</button>
+      <button onclick="limpiarFiltros()" class="border px-4 py-1.5 rounded text-sm hover:bg-gray-100">Limpiar</button>
+    </div>
+
+    <!-- Tabla -->
+    <div class="bg-white rounded-xl shadow overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+          <tr>
+            <th class="px-4 py-3 text-left">Fecha</th>
+            <th class="px-4 py-3 text-left">Descripción</th>
+            <th class="px-4 py-3 text-left">Proveedor</th>
+            <th class="px-4 py-3 text-left">Categoría</th>
+            <th class="px-4 py-3 text-left">Método</th>
+            <th class="px-4 py-3 text-right">Monto</th>
+            <th class="px-4 py-3 text-left">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tablaEgresos" class="divide-y divide-gray-100">
+          <tr><td colspan="7" class="px-4 py-6 text-center text-gray-400">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Modal -->
+  <div id="modal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg mx-4 max-h-screen overflow-y-auto">
+      <h2 id="modalTitulo" class="text-lg font-bold text-gray-800 mb-4">Nuevo Egreso</h2>
+      <form id="formEgreso" onsubmit="guardarEgreso(event)" class="space-y-3">
+        <input type="hidden" id="egresoId"/>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-gray-500">Fecha *</label>
+            <input id="fFecha" required type="date" class="border rounded-lg px-3 py-2 w-full text-sm mt-1"/>
+          </div>
+          <div>
+            <label class="text-xs text-gray-500">Monto *</label>
+            <input id="fMonto" required type="number" step="0.01" min="0.01"
+              class="border rounded-lg px-3 py-2 w-full text-sm mt-1" placeholder="0.00"/>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Descripción *</label>
+          <input id="fDescripcion" required type="text" class="border rounded-lg px-3 py-2 w-full text-sm mt-1"/>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Proveedor</label>
+          <input id="fProveedor" type="text" class="border rounded-lg px-3 py-2 w-full text-sm mt-1"/>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-gray-500">Categoría *</label>
+            <select id="fCategoria" required class="border rounded-lg px-3 py-2 w-full text-sm mt-1">
+              <option value="">-- Selecciona --</option>
+              <option value="Nómina">Nómina</option>
+              <option value="Alquiler">Alquiler</option>
+              <option value="Servicios (luz, agua, internet)">Servicios (luz, agua, internet)</option>
+              <option value="Compra de Insumos">Compra de Insumos</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Impuestos / DGII">Impuestos / DGII</option>
+              <option value="Transporte">Transporte</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-gray-500">Método de Pago *</label>
+            <select id="fMetodoPago" required class="border rounded-lg px-3 py-2 w-full text-sm mt-1">
+              <option value="">-- Selecciona --</option>
+              <option value="efectivo">Efectivo</option>
+              <option value="transferencia">Transferencia</option>
+              <option value="tarjeta">Tarjeta</option>
+              <option value="cheque">Cheque</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-gray-500">Moneda</label>
+            <select id="fMoneda" class="border rounded-lg px-3 py-2 w-full text-sm mt-1">
+              <option value="DOP">DOP (Pesos)</option>
+              <option value="USD">USD (Dólares)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-gray-500">No. Comprobante</label>
+            <input id="fComprobante" type="text" class="border rounded-lg px-3 py-2 w-full text-sm mt-1"/>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">Notas</label>
+          <textarea id="fNotas" rows="2" class="border rounded-lg px-3 py-2 w-full text-sm mt-1"></textarea>
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button type="submit" class="flex-1 bg-red-500 text-white py-2 rounded-lg text-sm hover:bg-red-600">Guardar</button>
+          <button type="button" onclick="cerrarModal()" class="flex-1 border py-2 rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    async function cargarEgresos() {
+      const desde = document.getElementById('filtroDesde').value;
+      const hasta = document.getElementById('filtroHasta').value;
+      const params = new URLSearchParams();
+      if (desde) params.append('fecha_desde', desde);
+      if (hasta) params.append('fecha_hasta', hasta);
+
+      try {
+        const egresos = await apiGet(`/egresos/?${params}&limit=200`);
+        const tbody = document.getElementById('tablaEgresos');
+        if (!egresos.length) {
+          tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-6 text-center text-gray-400">Sin egresos registrados</td></tr>';
+          return;
+        }
+        tbody.innerHTML = egresos.map(eg => `
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-3 text-gray-600">${eg.fecha}</td>
+            <td class="px-4 py-3 font-medium text-gray-800">${eg.descripcion}</td>
+            <td class="px-4 py-3 text-gray-600">${eg.proveedor || '—'}</td>
+            <td class="px-4 py-3"><span class="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full">${eg.categoria}</span></td>
+            <td class="px-4 py-3 text-gray-600 capitalize">${eg.metodo_pago}</td>
+            <td class="px-4 py-3 text-right font-semibold text-red-500">${fmtDOP(eg.monto)}</td>
+            <td class="px-4 py-3">
+              <button onclick="editarEgreso(${eg.id})" class="text-blue-600 hover:underline text-xs mr-3">Editar</button>
+              <button onclick="eliminarEgreso(${eg.id})" class="text-red-500 hover:underline text-xs">Eliminar</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch(e) {
+        showToast('Error cargando egresos: ' + e.message, 'error');
+      }
+    }
+
+    function abrirModal(eg = null) {
+      document.getElementById('modal').classList.remove('hidden');
+      document.getElementById('modalTitulo').textContent = eg ? 'Editar Egreso' : 'Nuevo Egreso';
+      document.getElementById('egresoId').value     = eg?.id || '';
+      document.getElementById('fFecha').value       = eg?.fecha || new Date().toISOString().slice(0,10);
+      document.getElementById('fMonto').value       = eg?.monto || '';
+      document.getElementById('fDescripcion').value = eg?.descripcion || '';
+      document.getElementById('fProveedor').value   = eg?.proveedor || '';
+      document.getElementById('fCategoria').value   = eg?.categoria || '';
+      document.getElementById('fMetodoPago').value  = eg?.metodo_pago || '';
+      document.getElementById('fMoneda').value      = eg?.moneda || 'DOP';
+      document.getElementById('fComprobante').value = eg?.numero_comprobante || '';
+      document.getElementById('fNotas').value       = eg?.notas || '';
+    }
+
+    function cerrarModal() { document.getElementById('modal').classList.add('hidden'); }
+
+    async function editarEgreso(id) {
+      try {
+        const eg = await apiGet(`/egresos/${id}`);
+        abrirModal(eg);
+      } catch(e) { showToast(e.message, 'error'); }
+    }
+
+    async function guardarEgreso(e) {
+      e.preventDefault();
+      const id = document.getElementById('egresoId').value;
+      const body = {
+        fecha:                document.getElementById('fFecha').value,
+        monto:                parseFloat(document.getElementById('fMonto').value),
+        descripcion:          document.getElementById('fDescripcion').value,
+        proveedor:            document.getElementById('fProveedor').value || null,
+        categoria:            document.getElementById('fCategoria').value,
+        metodo_pago:          document.getElementById('fMetodoPago').value,
+        moneda:               document.getElementById('fMoneda').value,
+        numero_comprobante:   document.getElementById('fComprobante').value || null,
+        notas:                document.getElementById('fNotas').value || null,
+      };
+      try {
+        if (id) {
+          await apiPut(`/egresos/${id}`, body);
+          showToast('Egreso actualizado ✅');
+        } else {
+          await apiPost('/egresos/', body);
+          showToast('Egreso registrado ✅');
+        }
+        cerrarModal();
+        cargarEgresos();
+      } catch(e) { showToast(e.message, 'error'); }
+    }
+
+    async function eliminarEgreso(id) {
+      if (!confirm('¿Eliminar este egreso?')) return;
+      try {
+        await apiDelete(`/egresos/${id}`);
+        showToast('Egreso eliminado');
+        cargarEgresos();
+      } catch(e) { showToast(e.message, 'error'); }
+    }
+
+    function limpiarFiltros() {
+      document.getElementById('filtroDesde').value = '';
+      document.getElementById('filtroHasta').value = '';
+      cargarEgresos();
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModal(); });
+    cargarEgresos();
+  </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "tusoin-finanzas",
+  "version": "2.0.0",
+  "description": "TuSoin - Tu Solución Inmediata | Sistema de Finanzas, Cotizaciones Elegantes y Control Operativo",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start:python": "python server.py",
+    "build": "echo 'Build successful for production'"
+  },
+  "keywords": [
+    "finanzas",
+    "cotizaciones",
+    "dgii",
+    "ncf",
+    "republica-dominicana",
+    "tusoin"
+  ],
+  "author": "TuSoin",
+  "license": "ISC"
+}
