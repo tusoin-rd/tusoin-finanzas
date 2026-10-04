@@ -181,6 +181,36 @@ async function initPostgresTables() {
           ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()
         `, [JSON.stringify(cloudState)]);
         console.log('[TuSoin PostgreSQL] Estado inicial sembrado en la base de datos.');
+
+        // Sembrar filas iniciales en tablas relacionales ventas, cotizaciones, productos
+        const countRes = await client.query(`SELECT COUNT(*) FROM ventas`);
+        if (parseInt(countRes.rows[0].count, 10) === 0 && Array.isArray(cloudState.sales)) {
+          console.log('[TuSoin PostgreSQL] Sembrando tablas relacionales iniciales (ventas, cotizaciones, productos)...');
+          for (const s of cloudState.sales) {
+            await client.query(`
+              INSERT INTO ventas (id, num_factura, fecha, cliente, concepto, monto, costo_produccion, abono_cliente, pendiente_cliente, monto_pagado_nc, monto_pendiente_nc, estado, margen, estado_costo_produccion, registrado_por)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+              ON CONFLICT (id) DO NOTHING
+            `, [
+              s.id || `sale-${s.numFactura || Date.now()}`,
+              s.numFactura || null,
+              s.fecha || '',
+              s.cliente || '',
+              s.articuloTrabajo || s.concepto || '',
+              s.totalVenta || s.monto || 0,
+              s.costoProduccion || 0,
+              s.abonoCliente || 0,
+              s.pendienteCliente || 0,
+              s.montoPagadoNorthCentral || 0,
+              s.montoPendienteNorthCentral || 0,
+              s.estado || 'Entregado',
+              s.margen || 0,
+              s.estadoCostoProduccion || '',
+              s.registradoPor || 'Admin'
+            ]);
+          }
+          console.log(`[TuSoin PostgreSQL] ✅ ${cloudState.sales.length} registros insertados en tabla 'ventas'.`);
+        }
       }
       return true;
     } finally {

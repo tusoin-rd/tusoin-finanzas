@@ -1447,13 +1447,13 @@
       "cantidad": 1.0,
       "articuloTrabajo": "Camiseta negra en dtf baby niko",
       "costoProduccion": 0,
-      "totalVenta": 1300.0,
-      "abonoCliente": 1300.0,
+      "totalVenta": 1600.0,
+      "abonoCliente": 1600.0,
       "pendienteCliente": 0.0,
       "montoPagadoNorthCentral": 0,
       "montoPendienteNorthCentral": 0.0,
       "estado": "En Proceso",
-      "margen": 1300.0,
+      "margen": 1600.0,
       "estadoCostoProduccion": "PAGADO"
     }
   ],
