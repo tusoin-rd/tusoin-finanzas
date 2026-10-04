@@ -11,5 +11,19 @@ services:
         value: 10000
       - key: NODE_ENV
         value: production
+      - key: MASTER_ADMIN_EMAIL
+        value: Admin2027@tusoinrd.com
+      - key: MASTER_ADMIN_PASSWORD
+        value: AdminD&J2027
+      - key: ALLOWED_GOOGLE_EMAILS
+        value: gerencia@tusoinrd.com,admin@tusoinrd.com,tusoin.rd@gmail.com
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: tusoin-db
+          property: connectionString
+
+databases:
+  - name: tusoin-db
+    plan: free
+    databaseName: tusoin_db
+    user: tusoin_user

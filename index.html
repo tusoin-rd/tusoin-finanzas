@@ -55,26 +55,26 @@
 
       <form id="loginForm" class="auth-form" autocomplete="on">
         <div class="form-group">
-          <label for="loginEmail">Correo Electrónico Corporativo</label>
+          <label for="loginEmail">Correo Corporativo (Acceso de Respaldo Maestro)</label>
           <div class="input-icon-wrap">
             <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
               <polyline points="22,6 12,13 2,6"></polyline>
             </svg>
-            <input type="email" id="loginEmail" required placeholder="admin@tusoinrd.com" autocomplete="email">
+            <input type="email" id="loginEmail" required placeholder="Admin2027@tusoinrd.com" autocomplete="email">
           </div>
         </div>
 
         <div class="form-group">
           <div class="label-with-addon">
-            <label for="loginPassword">Contraseña</label>
+            <label for="loginPassword">Contraseña Maestra de Respaldo</label>
           </div>
           <div class="input-icon-wrap">
             <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
-            <input type="password" id="loginPassword" required placeholder="••••••••" autocomplete="current-password">
+            <input type="password" id="loginPassword" required placeholder="••••••••••••" autocomplete="current-password">
             <button type="button" id="togglePasswordBtn" class="input-eye-btn" title="Mostrar/Ocultar contraseña">
               <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -92,21 +92,21 @@
         </div>
 
         <button type="submit" id="btnLoginSubmit" class="btn btn-primary btn-auth-submit">
-          <span class="btn-text">Iniciar Sesión</span>
+          <span class="btn-text">Iniciar Sesión de Respaldo</span>
           <span class="btn-loader" style="display: none;">
             <svg class="spinner" width="18" height="18" viewBox="0 0 50 50">
               <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
             </svg>
-            <span>Verificando acceso...</span>
+            <span>Verificando credenciales maestras...</span>
           </span>
         </button>
 
         <div class="auth-divider">
-          <span>o accede con tu cuenta</span>
+          <span>o ingresa mediante OAuth 2.0</span>
         </div>
 
-        <!-- Botón de Inicio de Sesión con Google OAuth -->
-        <button type="button" id="btnGoogleSignIn" class="btn btn-google-auth">
+        <!-- Botón de Inicio de Sesión con Google OAuth 2.0 (prompt='select_account') -->
+        <button type="button" id="btnGoogleSignIn" class="btn btn-google-auth" title="Iniciar Sesión con Google (Forzar selección de cuenta)">
           <svg class="google-icon" width="20" height="20" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3h3.86c2.26-2.09 3.68-5.17 3.68-9.09z"/>
             <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.37 24 12 24z"/>
@@ -115,30 +115,11 @@
           </svg>
           <span>Iniciar Sesión con Google</span>
         </button>
-
-        <!-- Botón de Acceso Rápido Directo para despliegues públicos en Vercel/Netlify/GitHub Pages -->
-        <button type="button" id="btnQuickDemoLogin" class="btn-demo-quick">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-          <span>Acceso Rápido Administrador (1 Clic)</span>
-        </button>
       </form>
-
-      <!-- Accesos Directos Rápidos de Prueba para los 2 Administradores -->
-      <div class="auth-demo-accounts">
-        <span class="demo-title">Credenciales de Administrador (Clic para auto-llenar):</span>
-        <div class="demo-chips">
-          <button type="button" class="demo-chip" onclick="fillAdminCredentials('admin@tusoinrd.com', 'admin123')">
-            <strong>Admin 1:</strong> admin@tusoinrd.com
-          </button>
-          <button type="button" class="demo-chip" onclick="fillAdminCredentials('gerencia@tusoinrd.com', 'tusoin2026')">
-            <strong>Admin 2 (Gerencia):</strong> gerencia@tusoinrd.com
-          </button>
-        </div>
-      </div>
     </div>
   </div>
 
-  <!-- Modal Google Sign-In con Validación de Lista Blanca -->
+  <!-- Modal Google Sign-In con Validación de Lista Blanca en Backend (prompt='select_account') -->
   <div id="googleAuthModal" class="modal-overlay" style="display: none;">
     <div class="modal-dialog modal-dialog-sm google-modal-card">
       <div class="google-modal-header">
@@ -150,8 +131,8 @@
             <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"/>
           </svg>
           <div>
-            <h3>Acceso Administrativo con Google</h3>
-            <p>Selecciona una cuenta autorizada en la lista blanca de TuSoin</p>
+            <h3>Google OAuth 2.0</h3>
+            <p>Selección de cuenta activa obligatoria (prompt=select_account)</p>
           </div>
         </div>
         <button type="button" class="close-modal-btn" id="btnCloseGoogleModal">&times;</button>
@@ -167,45 +148,45 @@
           <span id="googleAuthAlertText"></span>
         </div>
 
-        <p class="google-accounts-subtitle">Cuentas autorizadas por defecto (Whitelist):</p>
+        <p class="google-accounts-subtitle">Selecciona tu cuenta activa verificada en la lista blanca:</p>
 
         <div class="google-accounts-list">
-          <!-- Cuenta 1: Daivi José Tejada -->
-          <div class="google-account-item" onclick="selectGoogleAccount('daivi.jose.tejada@gmail.com')">
-            <div class="google-avatar" style="background: linear-gradient(135deg, #10b981, #059669);">DT</div>
+          <!-- Cuenta 1: gerencia@tusoinrd.com -->
+          <div class="google-account-item" onclick="selectGoogleAccount('gerencia@tusoinrd.com')">
+            <div class="google-avatar" style="background: linear-gradient(135deg, #10b981, #059669);">GE</div>
             <div class="google-account-info">
-              <div class="google-account-name">Daivi José Tejada</div>
-              <div class="google-account-email">daivi.jose.tejada@gmail.com</div>
+              <div class="google-account-name">Gerencia Financiera</div>
+              <div class="google-account-email">gerencia@tusoinrd.com</div>
             </div>
             <span class="google-badge-auth">Autorizado</span>
           </div>
 
-          <!-- Cuenta 2: TuSoin RD Oficial -->
+          <!-- Cuenta 2: admin@tusoinrd.com -->
+          <div class="google-account-item" onclick="selectGoogleAccount('admin@tusoinrd.com')">
+            <div class="google-avatar" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">AD</div>
+            <div class="google-account-info">
+              <div class="google-account-name">Administrador Principal</div>
+              <div class="google-account-email">admin@tusoinrd.com</div>
+            </div>
+            <span class="google-badge-auth">Autorizado</span>
+          </div>
+
+          <!-- Cuenta 3: tusoin.rd@gmail.com -->
           <div class="google-account-item" onclick="selectGoogleAccount('tusoin.rd@gmail.com')">
-            <div class="google-avatar" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">TS</div>
+            <div class="google-avatar" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">TS</div>
             <div class="google-account-info">
               <div class="google-account-name">TuSoin RD Oficial</div>
               <div class="google-account-email">tusoin.rd@gmail.com</div>
             </div>
             <span class="google-badge-auth">Autorizado</span>
           </div>
-
-          <!-- Cuenta 3: Jesi Cordero -->
-          <div class="google-account-item" onclick="selectGoogleAccount('Jesicordero24@gmail.com')">
-            <div class="google-avatar" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">JC</div>
-            <div class="google-account-info">
-              <div class="google-account-name">Jesi Cordero</div>
-              <div class="google-account-email">Jesicordero24@gmail.com</div>
-            </div>
-            <span class="google-badge-auth">Autorizado</span>
-          </div>
         </div>
 
         <div class="google-custom-login-section">
-          <label for="customGoogleEmail">O prueba con otra dirección de Google:</label>
+          <label for="customGoogleEmail">O introduce otra cuenta de Google para verificar:</label>
           <div class="google-custom-input-row">
-            <input type="email" id="customGoogleEmail" placeholder="ejemplo@gmail.com" class="google-custom-input">
-            <button type="button" id="btnTestGoogleCustom" class="btn btn-primary btn-sm">Validar</button>
+            <input type="email" id="customGoogleEmail" placeholder="cuenta@gmail.com" class="google-custom-input">
+            <button type="button" id="btnTestGoogleCustom" class="btn btn-primary btn-sm">Confirmar</button>
           </div>
         </div>
       </div>

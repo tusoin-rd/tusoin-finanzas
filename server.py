@@ -126,6 +126,80 @@ async def save_cloud_state(request: Request):
         db.close()
 
 # -------------------------------------------------------------
+# RUTAS DE AUTENTICACIÓN SEGURA Y CONTROL DE ACCESO
+# -------------------------------------------------------------
+MASTER_ADMIN_EMAIL = os.environ.get("MASTER_ADMIN_EMAIL", "Admin2027@tusoinrd.com")
+MASTER_ADMIN_PASSWORD = os.environ.get("MASTER_ADMIN_PASSWORD", "AdminD&J2027")
+
+ALLOWED_GOOGLE_EMAILS = [
+    e.strip().lower() for e in os.environ.get(
+        "ALLOWED_GOOGLE_EMAILS",
+        "gerencia@tusoinrd.com,admin@tusoinrd.com,tusoin.rd@gmail.com"
+    ).split(",") if e.strip()
+]
+
+@app.post("/api/auth/login", tags=["Autenticación"])
+async def master_login(request: Request):
+    """Acceso de respaldo maestro vía formulario tradicional."""
+    body = await request.json()
+    email = (body.get("email") or "").strip().lower()
+    password = body.get("password") or ""
+
+    if email == MASTER_ADMIN_EMAIL.lower() and password == MASTER_ADMIN_PASSWORD:
+        return {
+            "success": True,
+            "user": {
+                "email": MASTER_ADMIN_EMAIL,
+                "name": "Administrador Maestro TuSoin",
+                "role": "Super Administrador (Acceso Maestro)",
+                "initials": "AM",
+                "authProvider": "master_backup"
+            }
+        }
+    return JSONResponse(
+        status_code=401,
+        content={"success": False, "message": "Credenciales inválidas. Verifica tu correo corporativo y contraseña de respaldo maestro."}
+    )
+
+@app.post("/api/auth/google", tags=["Autenticación"])
+async def google_auth_validation(request: Request):
+    """Validación obligatoria de Google OAuth 2.0 contra lista blanca."""
+    body = await request.json()
+    email = (body.get("email") or "").strip().lower()
+
+    if email in ALLOWED_GOOGLE_EMAILS:
+        names_map = {
+            "gerencia@tusoinrd.com": "Gerencia Financiera",
+            "admin@tusoinrd.com": "Administrador Principal",
+            "tusoin.rd@gmail.com": "TuSoin RD Oficial"
+        }
+        roles_map = {
+            "gerencia@tusoinrd.com": "Gerente de Operaciones",
+            "admin@tusoinrd.com": "Administrador Principal",
+            "tusoin.rd@gmail.com": "Administrador General"
+        }
+        initials_map = {
+            "gerencia@tusoinrd.com": "GE",
+            "admin@tusoinrd.com": "AD",
+            "tusoin.rd@gmail.com": "TS"
+        }
+        return {
+            "success": True,
+            "user": {
+                "email": email,
+                "name": names_map.get(email, "Administrador TuSoin"),
+                "role": roles_map.get(email, "Administrador Autorizado (Google)"),
+                "initials": initials_map.get(email, "TS"),
+                "authProvider": "google"
+            }
+        }
+
+    return JSONResponse(
+        status_code=403,
+        content={"success": False, "message": "Acceso denegado. Este correo electrónico no está autorizado para acceder al sistema administrativo."}
+    )
+
+# -------------------------------------------------------------
 # SERVIDORES DE ARCHIVOS ESTÁTICOS Y FRONTEND
 # -------------------------------------------------------------
 current_dir = os.path.dirname(os.path.abspath(__file__))

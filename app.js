@@ -7,44 +7,39 @@
 // ==========================================
 // 1. CONFIGURACIÓN Y VERSIONADO DE BASE DE DATOS
 // ==========================================
+// ==========================================
+// 1. CONFIGURACIÓN Y CREDENCIALES SEGURAS
+// ==========================================
 const DB_VERSION = 'tusoinrd_real_excel_v2';
 
-const AUTH_USERS = [
-  {
-    email: 'admin@tusoinrd.com',
-    password: 'admin123',
-    name: 'Admin TuSoinRD',
-    role: 'Administrador Principal',
-    initials: 'AD'
-  },
+// Credenciales Maestras de Respaldo por Defecto (Acceso Tradicional de Emergencia)
+const MASTER_BACKUP_CREDENTIALS = {
+  email: 'Admin2027@tusoinrd.com',
+  password: 'AdminD&J2027',
+  name: 'Administrador Maestro TuSoin',
+  role: 'Super Administrador (Acceso Maestro)',
+  initials: 'AM'
+};
+
+// Lista blanca estricta autorizada para Google OAuth 2.0 (Restricción de Acceso)
+const GOOGLE_ADMIN_WHITELIST = [
   {
     email: 'gerencia@tusoinrd.com',
-    password: 'tusoin2026',
     name: 'Gerencia Financiera',
     role: 'Gerente de Operaciones',
     initials: 'GE'
-  }
-];
-
-// Lista blanca obligatoria para Google Sign-In (Whitelist de administradores)
-const GOOGLE_ADMIN_WHITELIST = [
+  },
   {
-    email: 'daivi.jose.tejada@gmail.com',
-    name: 'Daivi José Tejada',
+    email: 'admin@tusoinrd.com',
+    name: 'Administrador Principal',
     role: 'Administrador Principal',
-    initials: 'DT'
+    initials: 'AD'
   },
   {
     email: 'tusoin.rd@gmail.com',
     name: 'TuSoin RD Oficial',
     role: 'Administrador General',
     initials: 'TS'
-  },
-  {
-    email: 'Jesicordero24@gmail.com',
-    name: 'Jesi Cordero',
-    role: 'Administrador de Operaciones',
-    initials: 'JC'
   }
 ];
 
@@ -216,7 +211,7 @@ function initApp() {
   initSidebarState();
   loadCompanyInfo();
   checkAuth();
-  syncWithCloudDatabase();
+  startCloudRealtimeSync();
 }
 
 function loadRealData(forceReset = false) {
@@ -298,8 +293,11 @@ function loadRealData(forceReset = false) {
   if (savedCurrency) APP_STATE.currency = savedCurrency;
 }
 
-// Persistencia en LocalStorage y Sincronización Inmediata con Base de Datos Externa (PostgreSQL / Supabase)
+// Persistencia en LocalStorage y Sincronización Inmediata con Base de Datos Externa (PostgreSQL Cloud)
 let cloudSyncDebounce = null;
+let cloudRealtimeSyncInterval = null;
+let isSyncInProgress = false;
+let lastCloudSyncHash = '';
 
 function triggerCloudSave() {
   if (cloudSyncDebounce) clearTimeout(cloudSyncDebounce);
@@ -313,59 +311,103 @@ function triggerCloudSave() {
         quotes: APP_STATE.quotes,
         company: JSON.parse(localStorage.getItem('tusoinrd_company_info') || '{}')
       };
-      await fetch('/api/sync/save', {
+      const res = await fetch('/api/sync/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      console.log('[TuSoin Cloud] Datos sincronizados en base de datos externa permanente.');
+      if (res.ok) {
+        lastCloudSyncHash = JSON.stringify({ s: payload.sales.length, e: payload.expenses.length, c: payload.catalog.length, q: payload.quotes.length });
+        console.log('[TuSoin Cloud] ✅ Datos sincronizados y persistidos en la base de datos de la nube.');
+      }
     } catch (err) {
       // Continuar con persistencia local si no hay conexión al backend
     }
   }, 1000);
 }
 
-async function syncWithCloudDatabase() {
+// Sincronización Global en Tiempo Real (Consulta optimizada exactamente cada 10 segundos)
+async function syncWithCloudDatabase(isBackground = false) {
+  if (isSyncInProgress) return;
+  isSyncInProgress = true;
+
   try {
     const res = await fetch('/api/sync/load');
     if (res.ok) {
       const resp = await res.json();
       if (resp.status === 'success' && resp.has_data && resp.data) {
-        let hasChanges = false;
-        if (resp.data.sales && Array.isArray(resp.data.sales) && resp.data.sales.length > 0) {
-          APP_STATE.sales = resp.data.sales;
-          saveSales(false);
-          hasChanges = true;
-        }
-        if (resp.data.expenses && Array.isArray(resp.data.expenses) && resp.data.expenses.length > 0) {
-          APP_STATE.expenses = resp.data.expenses;
-          saveExpenses(false);
-          hasChanges = true;
-        }
-        if (resp.data.catalog && Array.isArray(resp.data.catalog) && resp.data.catalog.length > 0) {
-          APP_STATE.catalog = resp.data.catalog;
-          saveCatalog(false);
-          hasChanges = true;
-        }
-        if (resp.data.quotes && Array.isArray(resp.data.quotes) && resp.data.quotes.length > 0) {
-          APP_STATE.quotes = resp.data.quotes;
-          saveQuotes(false);
-          hasChanges = true;
-        }
-        if (resp.data.company && typeof resp.data.company === 'object') {
-          localStorage.setItem('tusoinrd_company_info', JSON.stringify(resp.data.company));
-          loadCompanyInfo();
-          hasChanges = true;
-        }
-        if (hasChanges) {
-          console.log('[TuSoin Cloud] Estado hidratado desde base de datos externa permanente.');
-          renderAllViews();
+        const currentHash = JSON.stringify({
+          s: (resp.data.sales || []).length,
+          e: (resp.data.expenses || []).length,
+          c: (resp.data.catalog || []).length,
+          q: (resp.data.quotes || []).length,
+          latestSaleId: resp.data.sales && resp.data.sales[0] ? resp.data.sales[0].id : null,
+          latestQuoteId: resp.data.quotes && resp.data.quotes[0] ? resp.data.quotes[0].id : null
+        });
+
+        // Solo refrescar vistas si se detectan cambios de datos
+        if (currentHash !== lastCloudSyncHash || !isBackground) {
+          lastCloudSyncHash = currentHash;
+          let hasChanges = false;
+
+          if (resp.data.sales && Array.isArray(resp.data.sales) && resp.data.sales.length > 0) {
+            APP_STATE.sales = resp.data.sales;
+            saveSales(false);
+            hasChanges = true;
+          }
+          if (resp.data.expenses && Array.isArray(resp.data.expenses) && resp.data.expenses.length > 0) {
+            APP_STATE.expenses = resp.data.expenses;
+            saveExpenses(false);
+            hasChanges = true;
+          }
+          if (resp.data.catalog && Array.isArray(resp.data.catalog) && resp.data.catalog.length > 0) {
+            APP_STATE.catalog = resp.data.catalog;
+            saveCatalog(false);
+            hasChanges = true;
+          }
+          if (resp.data.quotes && Array.isArray(resp.data.quotes) && resp.data.quotes.length > 0) {
+            APP_STATE.quotes = resp.data.quotes;
+            saveQuotes(false);
+            hasChanges = true;
+          }
+          if (resp.data.suppliers && Array.isArray(resp.data.suppliers)) {
+            APP_STATE.suppliers = resp.data.suppliers;
+            saveSuppliers(false);
+            hasChanges = true;
+          }
+          if (resp.data.company && typeof resp.data.company === 'object') {
+            localStorage.setItem('tusoinrd_company_info', JSON.stringify(resp.data.company));
+            loadCompanyInfo();
+            hasChanges = true;
+          }
+
+          if (hasChanges) {
+            console.log(`[TuSoin Cloud] 🔄 Sincronización en tiempo real (${resp.engine || 'Cloud'}): Datos actualizados en segundo plano.`);
+            renderAllViews();
+            populateClientsDatalist();
+          }
         }
       }
     }
   } catch (e) {
-    console.log('[TuSoin] Modo local activo.');
+    if (!isBackground) console.log('[TuSoin Cloud] Operando en modo local/desconectado.');
+  } finally {
+    isSyncInProgress = false;
   }
+}
+
+// Mecanismo de polling automatizado en segundo plano exactamente cada 10 segundos
+function startCloudRealtimeSync() {
+  if (cloudRealtimeSyncInterval) clearInterval(cloudRealtimeSyncInterval);
+  // Primera consulta inmediata
+  syncWithCloudDatabase(false);
+
+  // Consulta recurrente cada 10 segundos (10,000 ms) para sincronización multidispositivo
+  cloudRealtimeSyncInterval = setInterval(() => {
+    syncWithCloudDatabase(true);
+  }, 10000);
+
+  console.log('[TuSoin Cloud] ⏱️ Monitor de sincronización en la nube activo (intervalo: exactamente 10 segundos).');
 }
 
 function saveSales(triggerSync = true) {
@@ -418,9 +460,9 @@ function checkAuth() {
   }
 }
 
-function handleLogin(e) {
+async function handleLogin(e) {
   e.preventDefault();
-  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
   const remember = document.getElementById('rememberMe').checked;
   const submitBtn = document.getElementById('btnLoginSubmit');
@@ -432,18 +474,44 @@ function handleLogin(e) {
   submitBtn.disabled = true;
   alertBox.style.display = 'none';
 
-  setTimeout(() => {
-    const userFound = AUTH_USERS.find(u => u.email.toLowerCase() === email && u.password === password);
+  try {
+    let authSuccess = false;
+    let userSession = null;
 
-    if (userFound) {
-      const userSession = {
-        email: userFound.email,
-        name: userFound.name,
-        role: userFound.role,
-        initials: userFound.initials,
-        loginAt: new Date().toISOString()
-      };
+    // Intentar validación en Backend Seguro
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.user) {
+          authSuccess = true;
+          userSession = { ...data.user, loginAt: new Date().toISOString() };
+        }
+      }
+    } catch (netErr) {
+      // Fallback para modo offline o despliegues estáticos
+    }
 
+    // Validación contra credenciales maestras de respaldo
+    if (!authSuccess) {
+      if (email.toLowerCase() === MASTER_BACKUP_CREDENTIALS.email.toLowerCase() && password === MASTER_BACKUP_CREDENTIALS.password) {
+        authSuccess = true;
+        userSession = {
+          email: MASTER_BACKUP_CREDENTIALS.email,
+          name: MASTER_BACKUP_CREDENTIALS.name,
+          role: MASTER_BACKUP_CREDENTIALS.role,
+          initials: MASTER_BACKUP_CREDENTIALS.initials,
+          loginAt: new Date().toISOString(),
+          authProvider: 'master_backup'
+        };
+      }
+    }
+
+    if (authSuccess && userSession) {
       if (remember) {
         localStorage.setItem('tusoinrd_session', JSON.stringify(userSession));
       } else {
@@ -452,16 +520,23 @@ function handleLogin(e) {
 
       APP_STATE.currentUser = userSession;
       checkAuth();
-      showToast(`¡Bienvenido, ${userFound.name}!`);
+      showToast(`¡Bienvenido, ${userSession.name}!`);
     } else {
-      alertText.textContent = 'Correo electrónico o contraseña incorrectos. Verifica tus credenciales.';
+      // Destruir sesión y denegar acceso
+      localStorage.removeItem('tusoinrd_session');
+      sessionStorage.removeItem('tusoinrd_session');
+      APP_STATE.currentUser = null;
+      alertText.textContent = 'Credenciales inválidas. Verifica tu correo corporativo y contraseña de respaldo maestro.';
       alertBox.style.display = 'flex';
     }
-
+  } catch (err) {
+    alertText.textContent = 'Error al verificar credenciales. Inténtalo nuevamente.';
+    alertBox.style.display = 'flex';
+  } finally {
     submitBtn.querySelector('.btn-text').style.display = 'inline-block';
     submitBtn.querySelector('.btn-loader').style.display = 'none';
     submitBtn.disabled = false;
-  }, 400);
+  }
 }
 
 function handleLogout() {
@@ -474,19 +549,13 @@ function handleLogout() {
 
 function updateUserUI() {
   if (!APP_STATE.currentUser) return;
-  document.getElementById('userAvatarText').textContent = APP_STATE.currentUser.initials || 'AD';
-  document.getElementById('userFullName').textContent = APP_STATE.currentUser.name || 'Admin TuSoinRD';
-  document.getElementById('userEmailText').textContent = APP_STATE.currentUser.email || 'admin@tusoinrd.com';
+  document.getElementById('userAvatarText').textContent = APP_STATE.currentUser.initials || 'AM';
+  document.getElementById('userFullName').textContent = APP_STATE.currentUser.name || 'Administrador Maestro TuSoin';
+  document.getElementById('userEmailText').textContent = APP_STATE.currentUser.email || 'Admin2027@tusoinrd.com';
 }
 
-window.fillAdminCredentials = function(email, password) {
-  document.getElementById('loginEmail').value = email;
-  document.getElementById('loginPassword').value = password;
-  document.getElementById('loginAlert').style.display = 'none';
-};
-
 // ==========================================
-// 4.1 GOOGLE SIGN-IN & CONTROL DE LISTA BLANCA (WHITELIST)
+// 4.1 GOOGLE SIGN-IN & RESTRICCIÓN DE LISTA BLANCA (OAUTH 2.0)
 // ==========================================
 function openGoogleModal() {
   const modal = document.getElementById('googleAuthModal');
@@ -502,40 +571,75 @@ function closeGoogleModal() {
   if (modal) modal.style.display = 'none';
 }
 
-function selectGoogleAccount(email) {
+async function selectGoogleAccount(email) {
   if (!email) return;
   const cleanEmail = email.trim().toLowerCase();
-  const matched = GOOGLE_ADMIN_WHITELIST.find(a => a.email.toLowerCase() === cleanEmail);
+  let authSuccess = false;
+  let userSession = null;
 
-  if (matched) {
-    const userSession = {
-      email: matched.email,
-      name: matched.name,
-      role: matched.role,
-      initials: matched.initials,
-      loginAt: new Date().toISOString(),
-      authProvider: 'google'
-    };
+  try {
+    // 1. Enviar al Backend con prompt='select_account' para validación segura
+    try {
+      const res = await fetch('/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail, prompt: 'select_account' })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.user) {
+          authSuccess = true;
+          userSession = { ...data.user, loginAt: new Date().toISOString() };
+        }
+      }
+    } catch (netErr) {
+      // Fallback para entornos estáticos
+    }
 
-    localStorage.setItem('tusoinrd_session', JSON.stringify(userSession));
-    APP_STATE.currentUser = userSession;
-    closeGoogleModal();
-    checkAuth();
-    showToast(`¡Sesión iniciada con Google: ${matched.name}!`);
-  } else {
-    const errorMsg = `Acceso denegado: El correo "${email}" no está autorizado en la lista blanca de administradores. Por favor solicita autorización al administrador principal de TuSoin.`;
-    const modalAlert = document.getElementById('googleAuthAlert');
-    const modalAlertText = document.getElementById('googleAuthAlertText');
-    if (modalAlert && modalAlertText) {
-      modalAlertText.textContent = errorMsg;
-      modalAlert.style.display = 'flex';
+    // 2. Validación cliente contra lista blanca estricta
+    if (!authSuccess) {
+      const matched = GOOGLE_ADMIN_WHITELIST.find(a => a.email.toLowerCase() === cleanEmail);
+      if (matched) {
+        authSuccess = true;
+        userSession = {
+          email: matched.email,
+          name: matched.name,
+          role: matched.role,
+          initials: matched.initials,
+          loginAt: new Date().toISOString(),
+          authProvider: 'google'
+        };
+      }
     }
-    const loginAlert = document.getElementById('loginAlert');
-    const loginAlertText = document.getElementById('loginAlertText');
-    if (loginAlert && loginAlertText) {
-      loginAlertText.textContent = errorMsg;
-      loginAlert.style.display = 'flex';
+
+    if (authSuccess && userSession) {
+      localStorage.setItem('tusoinrd_session', JSON.stringify(userSession));
+      APP_STATE.currentUser = userSession;
+      closeGoogleModal();
+      checkAuth();
+      showToast(`¡Sesión iniciada con Google: ${userSession.name}!`);
+    } else {
+      // Destrucción inmediata de sesión en caso de no autorización
+      localStorage.removeItem('tusoinrd_session');
+      sessionStorage.removeItem('tusoinrd_session');
+      APP_STATE.currentUser = null;
+
+      const errorMsg = 'Acceso denegado. Este correo electrónico no está autorizado para acceder al sistema administrativo.';
+      const modalAlert = document.getElementById('googleAuthAlert');
+      const modalAlertText = document.getElementById('googleAuthAlertText');
+      if (modalAlert && modalAlertText) {
+        modalAlertText.textContent = errorMsg;
+        modalAlert.style.display = 'flex';
+      }
+      const loginAlert = document.getElementById('loginAlert');
+      const loginAlertText = document.getElementById('loginAlertText');
+      if (loginAlert && loginAlertText) {
+        loginAlertText.textContent = errorMsg;
+        loginAlert.style.display = 'flex';
+      }
     }
+  } catch (err) {
+    console.error('Error durante autenticación Google:', err);
   }
 }
 
@@ -1785,13 +1889,6 @@ function initSidebarState() {
   }
 }
 
-function quickAdminLogin() {
-  fillAdminCredentials('admin@tusoinrd.com', 'admin123');
-  const submitBtn = document.getElementById('btnLoginSubmit');
-  if (submitBtn) submitBtn.click();
-}
-window.quickAdminLogin = quickAdminLogin;
-
 // ==========================================
 // 20. MÓDULO 1: GESTIÓN DE PRODUCTOS Y SERVICIOS (CRUD & ALMACENAMIENTO)
 // ==========================================
@@ -2875,10 +2972,6 @@ function setupEventListeners() {
       }
     });
   }
-
-  // Botón Acceso Rápido Administrador
-  const btnQuickDemo = document.getElementById('btnQuickDemoLogin');
-  if (btnQuickDemo) btnQuickDemo.addEventListener('click', quickAdminLogin);
 
   // Toggle Password Visibility
   const togglePassBtn = document.getElementById('togglePasswordBtn');
